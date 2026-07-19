@@ -184,7 +184,7 @@ jobs:
           java-version: '17'
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+          targets: aarch64-linux-android
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: client/src-tauri
@@ -211,7 +211,7 @@ jobs:
           npx tauri android init
           # tauri android init generates placeholder icons.
           cp -R src-tauri/icons/android/. src-tauri/gen/android/app/src/main/res/
-          npx tauri android build --apk
+          npx tauri android build --apk --target aarch64
 
       - name: Sign APK
         env:
@@ -247,11 +247,13 @@ jobs:
     if: needs.setup.outputs.apple == 'true'
     permissions:
       contents: write
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 60
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode 16+
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1 || echo /Applications/Xcode.app)"
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios
@@ -277,23 +279,14 @@ jobs:
           test -n "$APPICON" || { echo "AppIcon.appiconset not found"; exit 1; }
           cp src-tauri/icons/ios/*.png "$APPICON"/
 
-      - name: Build unsigned .app and package IPA
-        working-directory: client/src-tauri/gen/apple
+      - name: Build unsigned IPA
+        working-directory: client
+        run: npx tauri ios build --no-sign
+      - name: Stage IPA
         run: |
           set -euo pipefail
-          PROJ="$(ls -d *.xcodeproj | head -1)"
-          SCHEME="$(xcodebuild -project "$PROJ" -list -json \
-            | python3 -c 'import json,sys; print(json.load(sys.stdin)["project"]["schemes"][0])')"
-          echo "project=$PROJ scheme=$SCHEME"
-          xcodebuild -project "$PROJ" -scheme "$SCHEME" -configuration release \
-            -sdk iphoneos -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            build
-          APP="$(find build/Build/Products -maxdepth 3 -name '*.app' | head -1)"
-          test -n "$APP" || { echo "no .app built"; exit 1; }
-          rm -rf Payload && mkdir -p Payload "$GITHUB_WORKSPACE/dist"
-          cp -R "$APP" Payload/
-          zip -qr "$GITHUB_WORKSPACE/dist/Arcagrad-iOS.ipa" Payload
+          mkdir -p dist
+          cp client/src-tauri/gen/apple/build/arm64/*.ipa dist/Arcagrad-iOS.ipa
 
       - name: Publish IPA to draft release
         uses: softprops/action-gh-release@v2

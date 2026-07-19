@@ -1,7 +1,7 @@
 <!-- Keep asset names in sync with client.yml. __TAG__ is replaced at release time. -->
 
-## Arcagrad Desktop
-The desktop app connects to an Arcagrad server. If you do not have a server yet, follow the [server installation guide](https://github.com/KalininG/arcagrad#readme) first.
+## Arcagrad Client
+The client app connects to an Arcagrad server. If you do not have a server yet, follow the [server installation guide](https://github.com/KalininG/arcagrad#readme) first.
 
 ### Downloads
 

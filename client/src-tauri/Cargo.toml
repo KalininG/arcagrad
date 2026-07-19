@@ -11,6 +11,13 @@ rust-version = "1.77.2"
 # The client has its own lockfile and workspace root.
 [workspace]
 
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
 [lib]
 name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]

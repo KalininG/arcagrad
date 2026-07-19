@@ -1,9 +1,22 @@
 //! EPUB metadata, spine, cover, and table-of-contents parsing.
 
+use std::fmt;
 use std::io::Read;
 use std::path::Path;
 
 use anyhow::{anyhow, Context, Result};
+
+/// A valid EPUB may intentionally contain no cover artwork at all.
+#[derive(Debug)]
+pub struct NoCover;
+
+impl fmt::Display for NoCover {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("epub declares no cover and contains no images")
+    }
+}
+
+impl std::error::Error for NoCover {}
 
 /// EPUB metadata and reading structure. Hrefs are resolved ZIP entry paths.
 #[derive(Debug, Clone, PartialEq)]
@@ -600,7 +613,7 @@ pub fn cover_entry(path: &Path) -> Result<String> {
     crate::media::archive::list_pages(path)?
         .into_iter()
         .next()
-        .ok_or_else(|| anyhow!("epub declares no cover and contains no images"))
+        .ok_or_else(|| anyhow::Error::new(NoCover))
 }
 
 #[cfg(test)]
@@ -999,7 +1012,8 @@ mod tests {
                 ("c1.xhtml", b"<html/>"),
             ],
         );
-        assert!(cover_entry(&p3).is_err());
+        let err = cover_entry(&p3).unwrap_err();
+        assert!(err.downcast_ref::<NoCover>().is_some());
     }
 
     #[test]

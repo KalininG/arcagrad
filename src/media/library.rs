@@ -569,6 +569,12 @@ pub async fn sweep_thumbnails(state: &AppState, cancel: &CancellationToken) -> R
                     let p = path.expect("path present when generating");
                     match ensure_thumbnail(&st, aid, &structural, &p, &modality).await {
                         Ok(bytes) => Some(bytes),
+                        Err(e) if e.downcast_ref::<crate::media::epub::NoCover>().is_some() => {
+                            tracing::debug!(
+                                "thumbnail unavailable for item {aid}: EPUB contains no cover"
+                            );
+                            return None;
+                        }
                         Err(e) => {
                             tracing::warn!("thumbnail sweep failed for item {aid}: {e:#}");
                             return Some(p.to_string_lossy().into_owned());

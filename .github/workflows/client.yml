@@ -184,7 +184,7 @@ jobs:
           java-version: '17'
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+          targets: aarch64-linux-android
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: client/src-tauri
@@ -211,7 +211,7 @@ jobs:
           npx tauri android init
           # tauri android init generates placeholder icons.
           cp -R src-tauri/icons/android/. src-tauri/gen/android/app/src/main/res/
-          npx tauri android build --apk
+          npx tauri android build --apk --target aarch64
 
       - name: Sign APK
         env:
@@ -247,11 +247,13 @@ jobs:
     if: needs.setup.outputs.apple == 'true'
     permissions:
       contents: write
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 60
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode 16+
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1 || echo /Applications/Xcode.app)"
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios

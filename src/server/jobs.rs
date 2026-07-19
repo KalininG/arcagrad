@@ -33,6 +33,8 @@ const SETTLE_DELAY_SECS: i64 = 2;
 
 const MAX_SETTLE_ATTEMPTS: i64 = 30;
 
+const TARGETED_RECOMPUTE_LIMIT: usize = 256;
+
 #[derive(sqlx::FromRow)]
 pub struct Job {
     pub id: i64,
@@ -194,6 +196,49 @@ pub async fn enqueue_coalesced(
     .execute(pool)
     .await?;
     Ok((res.rows_affected() > 0).then(|| res.last_insert_rowid()))
+}
+
+/// Ensure exactly one pending full recommendation rebuild exists for `kind`.
+async fn enqueue_full_recompute(pool: &SqlitePool, kind: &str) -> Result<i64> {
+    debug_assert!(matches!(
+        kind,
+        "recompute_neighbors" | "recompute_entry_neighbors"
+    ));
+
+    let mut tx = pool.begin().await?;
+    let pending: Vec<i64> =
+        sqlx::query_scalar("SELECT id FROM jobs WHERE kind = ? AND state = 'pending' ORDER BY id")
+            .bind(kind)
+            .fetch_all(&mut *tx)
+            .await?;
+    let n = now();
+
+    let id = if let Some(&id) = pending.first() {
+        sqlx::query("UPDATE jobs SET payload = NULL, updated_at = ? WHERE id = ?")
+            .bind(n)
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
+        sqlx::query("DELETE FROM jobs WHERE kind = ? AND state = 'pending' AND id <> ?")
+            .bind(kind)
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
+        id
+    } else {
+        sqlx::query(
+            "INSERT INTO jobs (kind, payload, state, attempts, created_at, updated_at) \
+             VALUES (?, NULL, 'pending', 0, ?, ?)",
+        )
+        .bind(kind)
+        .bind(n)
+        .bind(n)
+        .execute(&mut *tx)
+        .await?
+        .last_insert_rowid()
+    };
+    tx.commit().await?;
+    Ok(id)
 }
 
 pub async fn enqueue_calendar_refresh(pool: &SqlitePool) -> Result<()> {
@@ -487,14 +532,14 @@ pub async fn run_job(
                     deferred = stats.deferred.len(),
                     total = stats.total,
                     elapsed_ms = started.elapsed().as_millis() as u64,
-                    "scan job complete"
+                    "filesystem scan phase complete"
                 );
             } else {
                 tracing::debug!(
                     deferred = stats.deferred.len(),
                     total = stats.total,
                     elapsed_ms = started.elapsed().as_millis() as u64,
-                    "scan job complete (no changes)"
+                    "filesystem scan phase complete (no changes)"
                 );
             }
             if !stats.deferred.is_empty() {
@@ -527,8 +572,8 @@ pub async fn run_job(
             for hash in &stats.removed_thumbs {
                 crate::media::thumbnail::remove_item(&state.config.data_dir, hash).await;
             }
+            let mut enriched: Vec<i64> = Vec::new();
             if !stats.added_reflowable.is_empty() || !stats.added_paginated.is_empty() {
-                let mut enriched: Vec<i64> = Vec::new();
                 for (id, path) in &stats.added_reflowable {
                     match library::ingest_epub_metadata(
                         &state.write,
@@ -565,25 +610,6 @@ pub async fn run_job(
                         "enriched offline metadata (epub opf / comicinfo tags)"
                     );
                     state.clear_recommendation_caches();
-                    let payload = serde_json::json!({ "items": enriched }).to_string();
-                    if let Err(e) =
-                        enqueue(&state.write, "recompute_neighbors", Some(&payload)).await
-                    {
-                        tracing::warn!("failed to queue recompute after epub enrichment: {e:#}");
-                    }
-                    let leaf_map = repo::leaf_series_map(&state.read, &enriched).await?;
-                    let entries: Vec<i64> = enriched
-                        .iter()
-                        .map(|id| leaf_map.get(id).map(|sid| -sid).unwrap_or(*id))
-                        .collect();
-                    let payload = serde_json::json!({ "entries": entries }).to_string();
-                    if let Err(e) =
-                        enqueue(&state.write, "recompute_entry_neighbors", Some(&payload)).await
-                    {
-                        tracing::warn!(
-                            "failed to queue entry recompute after epub enrichment: {e:#}"
-                        );
-                    }
                 }
             }
             if full_scan {
@@ -603,23 +629,34 @@ pub async fn run_job(
                 state.entry_corpus.clear();
                 state.for_you.clear();
             }
-            if !repo::recommendation_index_ready(&state.read, repo::ITEM_NEIGHBORS_INDEX).await? {
-                enqueue_coalesced(&state.write, "recompute_neighbors", None).await?;
+            let changed = stats.added + stats.updated + stats.moved + stats.removed;
+            let bulk_change = changed > TARGETED_RECOMPUTE_LIMIT;
+            let item_ready =
+                repo::recommendation_index_ready(&state.read, repo::ITEM_NEIGHBORS_INDEX).await?;
+            let full_item_rebuild = !item_ready || bulk_change;
+            if full_item_rebuild {
+                enqueue_full_recompute(&state.write, "recompute_neighbors").await?;
+            } else if !enriched.is_empty() {
+                let payload = serde_json::json!({ "items": enriched }).to_string();
+                enqueue(&state.write, "recompute_neighbors", Some(&payload)).await?;
             }
-            if !repo::recommendation_index_ready(&state.read, repo::ENTRY_NEIGHBORS_INDEX).await?
-                || stats.added + stats.updated + stats.moved + stats.removed > 0
-            {
-                enqueue_coalesced(&state.write, "recompute_entry_neighbors", None).await?;
+
+            let entry_ready =
+                repo::recommendation_index_ready(&state.read, repo::ENTRY_NEIGHBORS_INDEX).await?;
+            if !entry_ready || changed > 0 {
+                enqueue_full_recompute(&state.write, "recompute_entry_neighbors").await?;
             }
             if !stats.moved_kind_changed.is_empty() || !stats.moved_leaf_status_changed.is_empty() {
                 state.similar.clear();
                 state.for_you.clear();
-                let mut items = stats.moved_kind_changed.clone();
-                items.extend(stats.moved_leaf_status_changed.iter().copied());
-                items.sort();
-                items.dedup();
-                let payload = serde_json::json!({ "items": items }).to_string();
-                enqueue(&state.write, "recompute_neighbors", Some(&payload)).await?;
+                if !full_item_rebuild {
+                    let mut items = stats.moved_kind_changed.clone();
+                    items.extend(stats.moved_leaf_status_changed.iter().copied());
+                    items.sort();
+                    items.dedup();
+                    let payload = serde_json::json!({ "items": items }).to_string();
+                    enqueue(&state.write, "recompute_neighbors", Some(&payload)).await?;
+                }
             }
             if !auto_scrape_ids.is_empty() {
                 let loaded: std::collections::HashSet<String> =
@@ -1608,6 +1645,77 @@ mod tests {
                 .is_some(),
             "scan running (not pending) → follow-up allowed"
         );
+    }
+
+    #[sqlx::test]
+    async fn full_recompute_upgrades_and_collapses_pending_targeted_jobs(pool: SqlitePool) {
+        let first = enqueue(&pool, "recompute_neighbors", Some(r#"{"items":[1,2]}"#))
+            .await
+            .unwrap();
+        enqueue(&pool, "recompute_neighbors", Some(r#"{"items":[3]}"#))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            enqueue_full_recompute(&pool, "recompute_neighbors")
+                .await
+                .unwrap(),
+            first
+        );
+        let rows: Vec<(i64, Option<String>)> = sqlx::query_as(
+            "SELECT id, payload FROM jobs \
+             WHERE kind = 'recompute_neighbors' AND state = 'pending' ORDER BY id",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert_eq!(rows, vec![(first, None)]);
+    }
+
+    #[sqlx::test]
+    async fn bulk_scan_replaces_pending_targeted_entry_recompute(pool: SqlitePool) {
+        let entries: Vec<i64> = (1..=10_000).collect();
+        let payload = serde_json::json!({ "entries": entries }).to_string();
+        let targeted = enqueue(&pool, "recompute_entry_neighbors", Some(&payload))
+            .await
+            .unwrap();
+
+        let full = enqueue_full_recompute(&pool, "recompute_entry_neighbors")
+            .await
+            .unwrap();
+        assert_eq!(full, targeted);
+
+        let rows: Vec<(i64, Option<String>)> = sqlx::query_as(
+            "SELECT id, payload FROM jobs \
+             WHERE kind = 'recompute_entry_neighbors' AND state = 'pending' ORDER BY id",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert_eq!(rows, vec![(targeted, None)]);
+    }
+
+    #[sqlx::test]
+    async fn running_targeted_recompute_gets_a_full_follow_up(pool: SqlitePool) {
+        let running = enqueue(&pool, "recompute_neighbors", Some(r#"{"items":[1]}"#))
+            .await
+            .unwrap();
+        sqlx::query("UPDATE jobs SET state = 'running' WHERE id = ?")
+            .bind(running)
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let follow_up = enqueue_full_recompute(&pool, "recompute_neighbors")
+            .await
+            .unwrap();
+        assert_ne!(follow_up, running);
+        let payload: Option<String> = sqlx::query_scalar("SELECT payload FROM jobs WHERE id = ?")
+            .bind(follow_up)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert!(payload.is_none());
     }
 
     #[test]

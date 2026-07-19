@@ -142,7 +142,7 @@ pub(crate) async fn page_thumb(
         (status = 200, description = "Cover thumbnail", body = Vec<u8>, content_type = "image/webp"),
         (status = 304, description = "Not modified — the client's cached copy is current"),
         (status = 401, description = "Not authenticated"),
-        (status = 404, description = "Unknown item"),
+        (status = 404, description = "Unknown item or item has no cover artwork"),
     ),
 )]
 pub(crate) async fn thumb(
@@ -182,13 +182,25 @@ pub(crate) async fn thumb(
         &std::path::PathBuf::from(&meta.path),
         &meta.modality,
     )
-    .await?;
+    .await
+    .map_err(thumbnail_error)?;
     Ok(image_response(
         "image/webp",
         &meta.structural_hash,
         bytes,
         versioned,
     ))
+}
+
+fn thumbnail_error(error: anyhow::Error) -> AppError {
+    if error
+        .downcast_ref::<crate::media::epub::NoCover>()
+        .is_some()
+    {
+        AppError::NotFound
+    } else {
+        AppError::Internal(error)
+    }
 }
 
 /// The subset of a Readium Web Publication Manifest we emit. Enough for a reader to
@@ -437,7 +449,8 @@ pub(crate) fn not_modified(headers: &HeaderMap, etag: &str) -> Option<Response> 
 
 #[cfg(test)]
 mod tests {
-    use super::looks_like_hash;
+    use super::{looks_like_hash, thumbnail_error};
+    use crate::server::error::AppError;
 
     #[test]
     fn looks_like_hash_gates_the_thumbnail_fast_path() {
@@ -449,5 +462,11 @@ mod tests {
         assert!(!looks_like_hash(""));
         assert!(!looks_like_hash("g0g0g0g0"));
         assert!(!looks_like_hash(&"a".repeat(200)));
+    }
+
+    #[test]
+    fn coverless_epub_thumbnail_is_not_found_not_internal_error() {
+        let error = anyhow::Error::new(crate::media::epub::NoCover);
+        assert!(matches!(thumbnail_error(error), AppError::NotFound));
     }
 }

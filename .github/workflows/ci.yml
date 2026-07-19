@@ -95,6 +95,8 @@ jobs:
         run: cargo nextest run --all
       - name: Test plugin-sdk (nextest)
         run: cargo nextest run --manifest-path plugin-sdk/Cargo.toml --features validation
+      - name: SDK publishable (dry-run)
+        run: cargo publish --dry-run -p arcagrad-plugin-sdk
 
   deny:
     name: licenses · advisories

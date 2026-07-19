@@ -5,7 +5,10 @@ edition = "2021"
 rust-version = "1.82"
 description = "Shared wire contract for arcagrad WASM plugins"
 license = "MIT"
-publish = false
+repository = "https://github.com/KalininG/arcagrad"
+readme = "README.md"
+keywords = ["arcagrad", "plugin", "wasm", "extism"]
+categories = ["wasm", "api-bindings"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

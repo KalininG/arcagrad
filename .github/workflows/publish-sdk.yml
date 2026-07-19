@@ -1,0 +1,25 @@
+name: Publish SDK (crates.io)
+
+# The plugin SDK versions on its OWN cadence (the plugin contract), independent of
+# the app version: bump plugin-sdk's version, tag `sdk-vX.Y.Z`, push → publish.
+on:
+  push:
+    tags: ['sdk-v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Tag must match the crate version
+        run: |
+          tag="${GITHUB_REF_NAME#sdk-v}"
+          crate="$(grep -m1 '^version = ' plugin-sdk/Cargo.toml | sed -E 's/version = "([^"]+)".*/\1/')"
+          echo "tag=$tag crate=$crate"
+          [ "$tag" = "$crate" ] || { echo "tag $tag != plugin-sdk version $crate"; exit 1; }
+      - name: Publish
+        run: cargo publish -p arcagrad-plugin-sdk
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

@@ -1,0 +1,41 @@
+---
+title: Administration
+description: Managing accounts, API access, and backups.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Arcagrad is multi-user, and a few things are reserved for administrators — the account you
+create on first run is an admin.
+
+## Accounts
+
+The first account is the **admin**. Admins manage the shared library — adding and removing
+items, editing metadata, and installing plugins — and add other accounts from the server's user
+management. Everyone else is a **reader**: they can read, and they keep their own progress,
+favorites, and ratings, but they don't change the library.
+
+Personal state is always per user; the library itself is shared.
+
+## API access
+
+Arcagrad has a full REST API. Create a personal **API key** to use it from scripts or other
+tools — see the [REST API](/reference/api/) reference. A key acts as your account, so treat it
+like a password.
+
+## Backups
+
+Everything Arcagrad generates lives in **`/data`** — the database, thumbnails, tags,
+reading progress, and settings. Back it up and you've saved all of it.
+
+<Aside type="caution" title="Metadata isn't stored in your files">
+Scraped tags, descriptions, and sources live **only** in the database under `/data`, not in
+your archives. Backing up `/data` is the one way to keep them.
+</Aside>
+
+## Recovery
+
+Lost the database? Point a fresh Arcagrad at the same library and it rebuilds the index by
+scanning — your files are the source of truth. Scraped metadata (tags and descriptions) isn't
+re-derived from your files, so a `/data` backup is the only way to bring it back — otherwise
+you re-fetch it with plugins.

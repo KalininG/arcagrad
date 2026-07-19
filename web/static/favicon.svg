@@ -1,0 +1,33 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="37%" r="80%">
+      <stop offset="0" stop-color="#202329"/>
+      <stop offset="1" stop-color="#0f1014"/>
+    </radialGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8f6f1"/>
+      <stop offset="1" stop-color="#ddd9cf"/>
+    </linearGradient>
+    <linearGradient id="verm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d6543c"/>
+      <stop offset="1" stop-color="#a93420"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#bg)"/>
+
+  <rect x="206" y="381" width="612" height="22" rx="11" fill="#000000" opacity="0.28"/>
+  <rect x="206" y="587" width="612" height="22" rx="11" fill="#000000" opacity="0.28"/>
+  <rect x="200" y="793" width="624" height="26" rx="13" fill="#000000" opacity="0.30"/>
+
+  <rect x="202" y="231" width="620" height="150" rx="28" fill="url(#paper)"/>
+  <rect x="202" y="437" width="620" height="150" rx="28" fill="url(#verm)"/>
+  <rect x="202" y="643" width="620" height="150" rx="28" fill="url(#paper)"/>
+
+  <rect x="238" y="245" width="548" height="11" rx="5" fill="#ffffff" opacity="0.6"/>
+  <rect x="238" y="451" width="548" height="11" rx="5" fill="#ffffff" opacity="0.25"/>
+  <rect x="238" y="657" width="548" height="11" rx="5" fill="#ffffff" opacity="0.6"/>
+
+  <rect x="282" y="264" width="22" height="83" rx="11" fill="#c1432d"/>
+  <rect x="282" y="676" width="22" height="83" rx="11" fill="#c1432d"/>
+</svg>

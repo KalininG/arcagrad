@@ -1,0 +1,43 @@
+/target
+plugins/*/target
+plugins/*/*.wasm
+/plugin-sdk/target
+/plugin-sdk/Cargo.lock
+
+# Local directories used for testing.
+/content
+/data
+
+# Frontend (SvelteKit) — the SOURCE is tracked. Only regenerated
+# artifacts and local settings are ignored.
+web/node_modules/
+web/.svelte-kit/
+web/build/
+web/.env
+web/.env.*
+
+# Native (Tauri) client — SOURCE (client/src-tauri/src, config, package.json) is
+# tracked; installed deps are ignored. Rust target/ + gen/schemas are covered by
+# client/src-tauri/.gitignore.
+client/node_modules/
+
+# macOS Finder metadata.
+.DS_Store
+
+# Local environment files.
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Deploy/build tarballs — large artifacts, never source.
+*.tar.gz
+
+# Android signing keystore — the maintainer's signing identity, never commit.
+*.jks
+*.keystore
+
+# Local, untracked dev scripts
+scripts-dev/

@@ -1,0 +1,77 @@
+
+
+:root {
+
+	--sl-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+		'Helvetica Neue', Arial, sans-serif;
+	--sl-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+
+	--sl-nav-height: 62px;
+
+
+	--sl-color-accent-low: #f4d8cf;
+	--sl-color-accent: #bf5138;
+	--sl-color-accent-high: #5f2013;
+}
+
+
+:root[data-theme='dark'] {
+	--sl-color-accent-low: #45261e;
+	--sl-color-accent: #cf6247;
+	--sl-color-accent-high: #ecb4a2;
+
+
+	--sl-color-white: #f6f7f9;
+	--sl-color-gray-1: #eceef2;
+	--sl-color-gray-2: #c3c8d0;
+	--sl-color-gray-3: #969ba6;
+	--sl-color-gray-4: #666c76;
+	--sl-color-gray-5: #353a44;
+	--sl-color-gray-6: #282c34;
+	--sl-color-gray-7: #1a1d24;
+	--sl-color-black: #13151a;
+
+
+	--sl-color-bg: #13151a;
+	--sl-color-bg-nav: color-mix(in srgb, #13151a 82%, transparent);
+	--sl-color-bg-sidebar: #16181e;
+	--sl-color-bg-inline-code: #1a1d24;
+	--sl-color-hairline: #282c34;
+	--sl-color-hairline-shade: #22252c;
+	--sl-color-hairline-light: #353a44;
+
+
+	--sl-color-text-accent: #e07d63;
+}
+
+
+.header {
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+
+:root {
+	--sl-border-radius-code: 12px;
+}
+.card,
+starlight-tabs,
+.expressive-code .frame pre,
+figure.frame {
+	border-radius: 12px;
+}
+
+:root[data-theme='dark'] {
+	--sl-color-text-invert: #13151a;
+}
+
+
+.top-level a[aria-current='page'] {
+	background: color-mix(in srgb, var(--sl-color-accent) 16%, transparent);
+	color: var(--sl-color-white);
+	font-weight: 600;
+}
+:root[data-theme='dark'] .top-level a[aria-current='page'] {
+	color: var(--sl-color-accent-high);
+}

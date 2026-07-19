@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<title>arcagrad</title>
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" type="image/png" sizes="32x32" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<script>
+			// Apply appearance before CSS loads to avoid a first-paint flash.
+			try {
+				var t = localStorage.getItem('arca:theme');
+				if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+				var a = localStorage.getItem('arca:accent');
+				if (a) document.documentElement.style.setProperty('--accent', a);
+			} catch (e) {
+				/* ignored */
+			}
+		</script>
+		<link
+			rel="preload"
+			href="/fonts/shippori-mincho-700-latin.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/inter-400-latin.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/inter-600-latin.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<style>
+			html {
+				background: #15161a;
+				color-scheme: dark;
+			}
+			html[data-theme='light'] {
+				background: #f2f1ee;
+				color-scheme: light;
+			}
+		</style>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

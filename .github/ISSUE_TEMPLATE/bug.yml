@@ -1,0 +1,71 @@
+name: Bug report
+description: Something is broken — crashes, wrong behavior, errors.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the bug report template. Filling in the version, deployment, platform, and reproduction steps is what makes an issue actionable.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release tag or image tag you run (e.g. `v0.3.1`, `latest` + image digest).
+      placeholder: v0.3.1
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment
+      options:
+        - Docker / docker-compose
+        - Native binary
+        - Built from source
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: OS + architecture of the server (and the client, if it's a client bug).
+      placeholder: e.g. Debian 12 amd64, server behind Caddy; reading from Safari on iOS
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what actually happened. Screenshots can help.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Drop a .epub into books/
+        2. Open its preview
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server logs
+      description: |
+        The relevant `docker logs arcagrad` (or stdout) around the failure — redact anything private.
+      render: text
+  - type: input
+    id: library
+    attributes:
+      label: Library shape (if scan/performance related)
+      placeholder: e.g. ~10k items, mostly CBZ, content dir on NFS etc.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues (including closed) for this problem.
+          required: true
+        - label: I can reproduce it on the latest release.

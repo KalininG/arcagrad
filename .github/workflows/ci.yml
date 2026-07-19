@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE']
+  pull_request:
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE']
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: '0'
+
+jobs:
+  lint:
+    name: fmt · versions · web lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install web deps
+        working-directory: web
+        run: npm ci
+
+      # Most frontend dependencies are build tooling; Dependabot handles lower severities.
+      - name: Web audit (npm)
+        working-directory: web
+        run: npm audit --audit-level=critical
+
+      - name: Versions in sync
+        run: bash scripts/version.sh check
+      - name: Rust format
+        run: cargo fmt --all --check
+      - name: Web format (prettier)
+        working-directory: web
+        run: npm run format:check
+      - name: Web lint (eslint)
+        working-directory: web
+        run: npm run lint
+      - name: Svelte check
+        working-directory: web
+        run: npm run check
+
+  rust:
+    name: clippy · nextest
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      RUSTFLAGS: -C link-arg=-fuse-ld=mold
+      CARGO_PROFILE_DEV_DEBUG: line-tables-only
+      CARGO_PROFILE_TEST_DEBUG: line-tables-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: System deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libvips-dev mold
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          # Bundled plugins use separate target directories.
+          cache-directories: plugins/*/target
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # rust-embed reads web/build during compilation.
+      - name: Build SPA
+        working-directory: web
+        run: npm ci && npm run build
+      - name: Lint (clippy)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test (nextest)
+        run: cargo nextest run --all
+      - name: Test plugin-sdk (nextest)
+        run: cargo nextest run --manifest-path plugin-sdk/Cargo.toml --features validation
+
+  deny:
+    name: licenses · advisories
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+      - run: cargo deny check

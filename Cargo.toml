@@ -1,0 +1,95 @@
+[package]
+name = "arcagrad"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+description = "Self-hosted multi-type library server (comics/manga/books)"
+license = "AGPL-3.0-only"
+default-run = "arcagrad"
+publish = false
+
+# Keep the SDK in the workspace for cargo-chef. Plugin crates build separately for wasm32.
+[workspace]
+members = ["plugin-sdk"]
+
+[dependencies]
+axum = { version = "0.8", features = ["multipart"] }
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["rt", "io"] }
+tower-http = { version = "0.6", features = ["trace", "cors", "compression-br", "compression-gzip"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+arcagrad-plugin-sdk = { path = "plugin-sdk", features = ["validation", "schema"] }
+url = "2"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+anyhow = "1"
+zip = "2"
+# Used by positioned ZIP reads without reopening every entry through ZipArchive.
+flate2 = "1"
+crc32fast = "1"
+roxmltree = "0.20"
+# Decode only. The bundled UnRAR source must not be used to build a compressor.
+unrar = "0.5"
+libvips = "2.3"
+blake3 = "1"
+walkdir = "2"
+rayon = "1"
+libc = "0.2"
+futures = "0.3"
+regex = "1"
+notify = "8"
+notify-debouncer-full = "0.6"
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "sqlite", "macros", "migrate"] }
+lru = "0.16"
+base64 = "0.22"
+sha1 = "0.10"
+argon2 = "0.5"
+# Enables OsRng through argon2's re-export.
+rand_core = { version = "0.6", features = ["getrandom"] }
+rust-embed = "8.11.0"
+mime_guess = "2.0.5"
+async-trait = "0.1"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+extism = "1.30"
+tantivy = "0.26"
+utoipa = { version = "5", features = ["axum_extras"] }
+utoipa-axum = "0.2"
+utoipa-swagger-ui = { version = "9", features = ["axum"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+tempfile = "3"
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "sqlite", "macros"] }
+
+[profile.release]
+opt-level = 3
+strip = true
+lto = "fat"
+codegen-units = 1
+
+# Cargo does not auto-discover integration tests in nested directories.
+[[test]]
+name = "api"
+path = "tests/api/integration.rs"
+
+[[test]]
+name = "openapi"
+path = "tests/api/openapi.rs"
+
+[[test]]
+name = "plugins"
+path = "tests/plugins/external.rs"
+
+[[test]]
+name = "concurrency"
+path = "tests/db/concurrency.rs"
+
+[[test]]
+name = "plugin_store"
+path = "tests/plugin_store.rs"
+
+[package.metadata.cargo-machete]
+ignored = ["rand_core"]

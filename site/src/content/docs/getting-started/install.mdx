@@ -1,0 +1,99 @@
+---
+title: Install with Docker
+description: Get Arcagrad running in three steps — install Docker, create one compose file, and open it in your browser.
+---
+
+import { Steps, Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Arcagrad ships as a single Docker image. From nothing to reading takes three steps.
+
+<Aside type="note" title="Before you begin">
+Install **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** (Windows or
+macOS) or **Docker Engine with Docker Compose** (Linux). That's the only thing Arcagrad needs.
+</Aside>
+
+<Steps>
+
+1. **Create the Arcagrad folder.** Make a new, empty folder anywhere, and inside it create a
+   file named `docker-compose.yml` with this content:
+
+   ```yaml title="docker-compose.yml"
+   services:
+     arcagrad:
+       image: ghcr.io/kalining/arcagrad:latest
+       ports:
+         - "3000:3000"
+       volumes:
+         - /path/to/your/library:/content  # your existing books & comics — CHANGE THIS
+         - ./data:/data                     # Arcagrad's database & settings (made for you)
+       restart: unless-stopped
+   ```
+
+   Replace `/path/to/your/library` with the real folder that holds your files — for example:
+
+   ```yaml
+   # Linux
+   - /home/<your-user>/Comics:/content
+   # macOS
+   - /Users/<your-user>/Comics:/content
+   # Windows
+   - C:/Users/<your-user>/Comics:/content
+   ```
+
+2. **Start it.** From that same folder, run:
+
+   ```bash
+   docker compose up -d
+   ```
+
+3. **Open Arcagrad and create your admin account.**
+
+   - On this computer: **[http://localhost:3000](http://localhost:3000)**
+   - On a NAS or server: **`http://SERVER-IP:3000`** — swap in the server's address.
+
+   Arcagrad scans your library in the background — covers fill in as it works.
+
+</Steps>
+
+That's the whole install. Everything below is reference for when you want it.
+
+<Aside type="tip" title="Prefer a one-liner?">
+No file needed — run it directly (replace the library path the same way):
+
+```bash
+docker run -d -p 3000:3000 \
+  -v /path/to/your/library:/content \
+  -v arcagrad-data:/data \
+  --name arcagrad ghcr.io/kalining/arcagrad:latest
+```
+</Aside>
+
+## The two volumes
+
+Arcagrad only needs two mounts, and the split is deliberate: your original files are never rewritten, and everything Arcagrad generates lives in one place you can back up.
+
+| Mount      | Path       | What it holds                                        |
+| ---------- | ---------- | ---------------------------------------------------- |
+| Library    | `/content` | your comic, manga, and book files                    |
+| Data       | `/data`    | the database, thumbnail cache, and config            |
+
+<Aside type="tip" title="Back up one folder">
+Everything Arcagrad derives — the index, thumbnails, tags, reading progress — lives in
+`/data` (the `data/` folder in the compose setup). Copy it and you've backed up everything
+except the files themselves.
+</Aside>
+
+## Good to know
+
+<Aside type="tip" title="Data folder permissions">
+The container runs as **root** by default, so the `/data` folder just works — no `chown`
+needed, even the one Docker auto-creates for a bind mount. If you switch to a non-root
+`user:`, make `/data` writable by that uid first (`sudo chown -R 1000:1000 data`).
+</Aside>
+
+## Next
+
+<CardGrid>
+  <LinkCard title="What Arcagrad is" description="One library for everything, with your original files kept intact." href="/getting-started/introduction/" />
+  <LinkCard title="Add metadata with plugins" description="Pull tags, covers, and descriptions from external sources." href="/guides/plugins/" />
+</CardGrid>

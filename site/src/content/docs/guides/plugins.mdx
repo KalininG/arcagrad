@@ -1,0 +1,107 @@
+---
+title: Plugins
+description: Install plugins to add metadata, browse external sources, download new items, and track releases — each one sandboxed.
+sidebar:
+  order: 3
+---
+
+import { CardGrid, Card, Aside, Steps } from '@astrojs/starlight/components';
+
+Arcagrad reads and organizes your own files on its own. **Plugins** are how it reaches
+*outside* your library — to fetch metadata, browse an external source, download new items,
+and watch for new releases. They're optional: reading and organizing what you already have
+works without them.
+
+## What plugins can do
+
+<CardGrid>
+  <Card title="Add metadata">
+    Pull tags, a cover, a description, and creator info for an item from an online source —
+    one click, or automatically as files arrive.
+  </Card>
+  <Card title="Browse a source">
+    Browse an external catalog from inside Arcagrad, with the same grid and covers as your
+    own library.
+  </Card>
+  <Card title="Download into your library">
+    Bring an item you found straight into a kind folder as a new file — no manual
+    download-and-import.
+  </Card>
+  <Card title="Follow for releases">
+    Subscribe to a search on a source; Arcagrad checks it for you and collects new matches
+    to review.
+  </Card>
+  <Card title="Read online">
+    Stream a source's pages in Arcagrad's reader without downloading the whole item first.
+  </Card>
+  <Card title="Find by image">
+    Reverse-image lookup — match a cover or page against a source to identify what an item is.
+  </Card>
+</CardGrid>
+
+<Aside type="note">
+These are what the plugin *contract* allows — not every plugin does all of them. A plugin
+declares which it supports, and the bundled ones focus on metadata and browsing.
+</Aside>
+
+## Sandboxed by design
+
+Plugins are **sandboxed WebAssembly modules**. A plugin can't read your disk or open network
+connections on its own — the server makes every request on its behalf, and only to the sites
+the plugin declares up front. So even a community-made plugin is boxed in, and can only do
+what you allow.
+
+## Installing a plugin
+
+Plugin management lives under **Plugins** in the sidebar, and is admin-only.
+
+<Steps>
+
+1. Open **Plugins**. Bundled plugins are listed and ready to install; to get community ones,
+   add a **repository** (below).
+
+2. Click **Install**. It loads immediately — no restart. Uninstalling is just as quick, and it
+   keeps any saved credentials in case you reinstall later.
+
+3. Arcagrad checks your repositories for updates nightly, so the store tells you when a newer
+   version is available.
+
+</Steps>
+
+## Turning plugins on per kind
+
+Plugins are **off by default**. You choose which are active for each
+[kind](/guides/organizing-your-library/) — for example, a metadata source for your *Manga*
+kind but not your *Books* kind.
+
+<Aside type="tip" title="Automatic metadata">
+Mark a plugin **auto** for a kind and Arcagrad fetches metadata for new items in that kind as
+they arrive — drop files in, and they come back tagged.
+</Aside>
+
+## Credentials
+
+Some sources need an account. Add its credentials on the plugin's page; they're stored for
+that plugin only and never shared with another plugin. Each plugin explains what it needs and
+where to find it.
+
+## Using plugins
+
+- **Add metadata** — on an item, choose **Scrape** and pick a plugin. It fills in tags, a
+  cover, and a description (or let *auto* do it).
+- **Browse & download** — open a source's catalog, preview an item, and download it into the
+  kind you choose.
+- **Follow** — save a search as a **Following**; new matches are collected for you to review
+  and download when you want them.
+
+## Repositories
+
+Community plugins install from a **repository** — a URL you add under **Plugins →
+Repositories**. Bundled plugins are built in and always available. A repository only supplies
+the plugin files; a plugin still can't touch the network except through the sandbox above.
+
+## Authoring your own
+
+Plugins follow an open, versioned contract, so anyone can write one. The
+[authoring guide and SDK reference](https://github.com/KalininG/arcagrad/blob/main/docs/plugins/authoring-plugins.md)
+live in the repository for now; a fuller version will follow here.

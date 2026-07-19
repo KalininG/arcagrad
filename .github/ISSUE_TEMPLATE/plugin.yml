@@ -1,0 +1,61 @@
+name: Plugin issue
+description: A bundled plugin misbehaves — scrape/browse/download/read against its source.
+labels: ["plugin"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is for **bundled** plugins (shipped with Arcagrad).
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin
+      description: The plugin id as shown on the Plugins page.
+      placeholder: e.g. anilist, openlibrary, gutenberg
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version + server version
+      description: Both are on the plugin's detail page.
+      placeholder: e.g. plugin 0.2.0, server v0.3.1
+    validations:
+      required: true
+  - type: dropdown
+    id: operation
+    attributes:
+      label: Which operation fails?
+      options:
+        - Scrape (metadata match)
+        - Browse (feeds / search)
+        - Download to library
+        - Read online / covers not loading
+        - Credentials / auth
+        - Identify
+        - Calendar
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: |
+        Include the reference you used (id / URL / ISBN).
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server logs
+      description: The logs from the server - redact anything you dont want seen first.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: The source site itself works in my browser right now (it's not down / region-blocked for me).
+          required: true
+        - label: This is a bundled plugin, not one I installed from a third-party repository.
+          required: true

@@ -1,0 +1,13 @@
+services:
+  arcagrad:
+    build: .
+    image: arcagrad:edge
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./content:/content
+      - ./data:/data
+    environment:
+      - RUST_LOG=info,tower_http=info
+    # To run non-root: add `user: "1000:1000"`.
+    restart: unless-stopped

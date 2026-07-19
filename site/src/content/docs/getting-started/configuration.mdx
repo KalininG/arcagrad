@@ -1,0 +1,86 @@
+---
+title: Configuration
+description: The few Docker-level settings Arcagrad exposes — ports, HTTPS, permissions, and updates. Everything else lives in the app.
+---
+
+import { Aside, LinkCard } from '@astrojs/starlight/components';
+
+Arcagrad is built to need almost no configuration. The two volumes and the port from
+the [Install](/getting-started/install/) page are all Docker needs — there's no config
+file or environment variables to set up. Everything else is managed inside the app once
+it's running.
+
+## Ports
+
+The container listens on port **3000**. Map it to whatever host port you like with `-p`:
+
+```bash
+-p 8080:3000    # reach Arcagrad at http://localhost:8080
+```
+
+## HTTPS and a domain
+
+On a home network you can use Arcagrad over plain HTTP. To reach it from anywhere on a
+real domain with automatic HTTPS, put it behind a reverse proxy. [Caddy](https://caddyserver.com)
+is the simplest — a two-line config gets you a certificate:
+
+```txt title="Caddyfile"
+arcagrad.example.com {
+    reverse_proxy localhost:3000
+}
+```
+
+<Aside type="tip" title="Long-lived requests">
+Arcagrad keeps some requests open to stream live updates (scan and download progress).
+If your proxy sets custom timeouts, allow responses to stay open for at least 30 seconds
+so those updates aren't cut off.
+</Aside>
+
+## Running as your own user
+
+The container runs as **root** by default, so a mounted `/data` is writable with no
+setup. If you'd rather it run as your host user — so files it writes are owned by you —
+pass `--user` (or set `user:` in compose):
+
+```bash
+--user 1000:1000
+```
+
+<Aside type="caution" title="Volume permissions">
+When you run with `--user`, `/data` must be writable by that uid. A bind-mount folder
+Docker just created is owned by root, so `chown -R 1000:1000 ./data` first. Running as
+root (the default) avoids this entirely.
+</Aside>
+
+## Health checks
+
+The image ships with a built-in health check against **`/health`**, so `docker ps`
+reports the container as *healthy* once it's ready to serve. Point a reverse proxy or an
+uptime monitor at the same path — it returns `200 OK` when Arcagrad is up.
+
+## Updating
+
+Pull the newer image and recreate the container. Your library and everything in `/data`
+carry over untouched:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+## Backups
+
+Everything Arcagrad generates — the index, thumbnails, tags, reading progress — lives in
+`/data`. Back it up and you've saved all of it; your library files
+are backed up separately, wherever you keep them.
+
+## Everything else is in the app
+
+Accounts, metadata plugins, per-kind settings, and source credentials are all managed
+from the admin area inside Arcagrad. There's nothing to edit in a file on disk.
+
+<LinkCard
+  title="Organize your library"
+  description="How Arcagrad reads your folders into kinds, series, and standalone works."
+  href="/guides/organizing-your-library/"
+/>

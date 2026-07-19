@@ -1,0 +1,81 @@
+---
+title: Organizing your library
+description: How Arcagrad reads your folders into kinds, series, and standalone works.
+sidebar:
+  order: 1
+---
+
+import { FileTree, Aside } from '@astrojs/starlight/components';
+
+Arcagrad reads your existing folders — you don't reorganize anything to get started, and
+a flat pile of archives works fine. But a light folder convention unlocks nicer grouping,
+and it's all just folders and files you already understand.
+
+## One folder, one kind
+
+Each top-level folder inside your library becomes a **kind** — a tab across the top of
+your library. The folder name *is* the label, so you decide how it's grouped:
+
+<FileTree>
+- content/
+  - Manga/
+  - Comics/
+  - Books/
+</FileTree>
+
+Anything sitting loose at the top level shows up under **Uncategorized**, so nothing is
+ever hidden or rejected. Group by type, language, source — whatever suits you. The folders
+are just labels.
+
+<Aside type="tip" title="Bring your own structure">
+Already have a flat library, or one organized by artist? Point Arcagrad at it as-is — it
+all works, and anything outside a kind folder simply appears under *Uncategorized*. Add
+kind folders later whenever you feel like tidying up.
+</Aside>
+
+## Series and standalone works
+
+Inside a kind, the folder layout tells Arcagrad what's a series and what stands alone:
+
+- A **subfolder is a series** — every archive inside it is a **volume**.
+- A **loose archive is a standalone work** — a one-shot, an art book, a single issue.
+
+<FileTree>
+- Manga/
+  - Berserk/
+    - Berserk v01.cbz
+    - Berserk v02.cbz
+    - Berserk v03.cbz
+  - A Standalone Story.cbz
+</FileTree>
+
+A series collapses to a single cover in your grid; open it to see its volumes in order.
+Volume numbers come from the filenames (`v01`, `v02`, `Chapter 5`…), so consistent naming
+keeps them sorted. Extra sub-folders for arcs or batches inside a series don't split it —
+everything beneath the series folder belongs to the same series.
+
+## The right reader, automatically
+
+You never pick a "type" for a file. Arcagrad looks at each file's **contents**, not its
+name, and chooses the reading experience: image archives (CBZ, CBR, and friends) page like
+a comic, and EPUBs reflow like a book. A comic and a novel can sit in the same library, and
+each opens the way it should.
+
+## Adding and removing
+
+Three ways to get items in:
+
+- **Drop files into the folder** — Arcagrad notices and indexes them within seconds; covers
+  fill in as it works.
+- **Upload from the web app** — choose the kind, and it lands in the right folder for you.
+- **Download with a plugin** — browse an external source and pull an item straight into your
+  library.
+
+Removing an item from the web app deletes the actual file. Arcagrad only ever adds or removes
+*whole* files — it never rewrites the contents of one.
+
+## Scanning
+
+Arcagrad scans when it starts and then watches for changes, so new files appear on their own
+— you don't run scans by hand. Folders that haven't changed are skipped, which is why even a
+very large library re-checks quickly.

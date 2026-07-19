@@ -1,0 +1,49 @@
+---
+title: Introduction
+description: What Arcagrad is and who it's for.
+---
+
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+
+Arcagrad is a self-hosted server and reader for **comics, manga, and books**. Point it
+at a folder, and it becomes a private library you (and anyone you invite) can read
+from anywhere — with covers, tags, search, and reading progress that syncs across
+your devices.
+
+It's built in Rust and ships as a single Docker image, and it's designed to stay fast
+even as your collection grows to more than **100,000 items**.
+
+## Core ideas
+
+<CardGrid>
+  <Card title="One library for everything">
+    Keep comics, manga, standalone works, series, and EPUB books together. Arcagrad
+    automatically chooses the appropriate reading experience for each item.
+  </Card>
+  <Card title="Keeps your original files intact">
+    Arcagrad never rewrites the contents of an existing book or archive. Library
+    information is stored separately and can be rebuilt by scanning your collection
+    again.
+  </Card>
+  <Card title="Multi-user from day one">
+    Accounts gate access, and reading progress, favorites, ratings, and
+    recommendations are all per user.
+  </Card>
+  <Card title="Batteries included">
+    Optional plugins can add metadata, browse external catalogs, and track releases.
+    Search, recommendations, and multi-user reading are built into the server.
+  </Card>
+</CardGrid>
+
+## Get started
+
+<LinkCard
+  title="Install with Docker"
+  description="One Docker image, a content folder, and a data folder — running in three steps."
+  href="/getting-started/install/"
+/>
+
+<Aside type="note">
+This documentation is an early draft and will grow as Arcagrad approaches its first
+release.
+</Aside>

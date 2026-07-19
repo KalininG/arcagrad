@@ -1,0 +1,150 @@
+---
+const repo = 'https://github.com/KalininG/arcagrad';
+const SITE_URL = 'https://arcagrad.com';
+const TITLE = 'Download Arcagrad — apps for macOS, Windows, Linux, Android & iOS';
+const DESC = 'Download the native Arcagrad reader for macOS, Windows, Linux, Android, and iOS. Connects to your self-hosted server, with offline downloads.';
+
+import { Icon } from 'astro-icon/components';
+
+const dl = (asset) => `${repo}/releases/latest/download/${asset}`;
+const downloads = [
+	{ os: 'macOS', hint: 'Apple Silicon', file: 'Arcagrad-macOS-AppleSilicon.dmg', match: 'mac', icon: 'mdi:apple' },
+	{ os: 'Windows', hint: 'Installer (.exe)', file: 'Arcagrad-Windows-Setup.exe', match: 'win', icon: 'mdi:microsoft-windows' },
+	{ os: 'Linux', hint: 'AppImage', file: 'Arcagrad-Linux-x86_64.AppImage', match: 'linux', icon: 'mdi:linux' },
+	{ os: 'Android', hint: 'APK', file: 'Arcagrad-Android.apk', match: 'android', icon: 'mdi:android' },
+	{ os: 'iOS', hint: 'Sideload (.ipa)', file: 'Arcagrad-iOS.ipa', match: 'ios', icon: 'mdi:apple-ios' },
+];
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="canonical" href={`${SITE_URL}/download/`} />
+		<title>{TITLE}</title>
+		<meta name="description" content={DESC} />
+		<style>
+			:root {
+				--bg: #13151a; --bg-2: #191c22; --surface: #1a1d24;
+				--border: #282c34; --border-2: #353a44;
+				--text: #eceef2; --muted: #969ba6; --faint: #666c76;
+				--accent: #cf6247; --accent-2: #e07d63;
+				--radius: 14px; --maxw: 1280px;
+				--font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+			}
+			* { box-sizing: border-box; }
+			html { scroll-behavior: smooth; }
+			body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+			a { color: inherit; text-decoration: none; }
+			.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+			header { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg) 78%, transparent); border-bottom: 1px solid var(--border); }
+			.nav { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+			.brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 1.05rem; letter-spacing: -0.01em; }
+			.brand .mark { width: 24px; height: 24px; border-radius: 6px; display: block; }
+			.nav-links { display: flex; align-items: center; gap: 26px; font-size: 0.9rem; color: var(--muted); }
+			.nav-links a:hover { color: var(--text); }
+
+			.head { text-align: center; padding: 84px 0 8px; }
+			.head h1 { margin: 0; font-size: clamp(2rem, 4vw, 2.8rem); letter-spacing: -0.02em; font-weight: 650; }
+			.head p { margin: 16px auto 0; max-width: 56ch; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.12rem); }
+
+			.dl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 44px auto 0; max-width: 820px; }
+			.dl-card { display: flex; flex-direction: column; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px 22px; transition: border-color .15s, transform .08s, background .15s; }
+			.dl-card:hover { border-color: var(--faint); background: var(--bg-2); transform: translateY(-2px); }
+			.dl-ico { width: 40px; height: 40px; color: var(--text); margin-bottom: 8px; }
+			.dl-os { font-weight: 600; font-size: 1.1rem; }
+			.dl-hint { font-size: 0.82rem; color: var(--faint); }
+			.dl-go { margin-top: 14px; font-size: 0.9rem; font-weight: 600; color: var(--accent); }
+			.dl-card.featured { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+			.dl-card.featured .dl-go { color: var(--accent-2); }
+			.dl-alt { text-align: center; margin: 26px auto 0; color: var(--muted); font-size: 0.92rem; }
+			.dl-alt a { color: var(--accent); }
+			.dl-alt a:hover { color: var(--accent-2); }
+			.note { max-width: 640px; margin: 40px auto 0; text-align: center; color: var(--faint); font-size: 0.86rem; line-height: 1.7; }
+
+			footer { border-top: 1px solid var(--border); margin-top: 90px; padding: 40px 0; color: var(--faint); font-size: 0.86rem; }
+			.foot { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+			.foot a { color: var(--muted); }
+			.foot a:hover { color: var(--text); }
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<div class="wrap nav">
+				<a class="brand" href="/"><img class="mark" src="/icon.svg" alt="" width="24" height="24" /> Arcagrad</a>
+				<nav class="nav-links">
+					<a href="/">Home</a>
+					<a href="/getting-started/introduction/">Docs</a>
+					<a href={repo}>GitHub</a>
+				</nav>
+			</div>
+		</header>
+
+		<main>
+			<section class="wrap head">
+				<h1>Download the app</h1>
+				<p>The native Arcagrad reader connects to your self-hosted server and adds offline downloads. Pick your platform — desktop or mobile — or skip the install and use the web reader in any browser.</p>
+			</section>
+
+			<section class="wrap">
+				<div class="dl-grid">
+					{downloads.map((d) => (
+						<a class="dl-card" href={dl(d.file)} data-os={d.match} rel="noopener">
+							<Icon name={d.icon} class="dl-ico" />
+							<span class="dl-os">{d.os}</span>
+							<span class="dl-hint">{d.hint}</span>
+							<span class="dl-go">Download&nbsp;↓</span>
+						</a>
+					))}
+				</div>
+				<p class="dl-alt">
+					Linux also as <a href={dl('Arcagrad-Linux-amd64.deb')}>.deb</a> or <a href={dl('Arcagrad-Linux-x86_64.rpm')}>.rpm</a>.
+					Every link always downloads the latest release.
+				</p>
+				<p class="note">
+					The apps aren't code-signed yet, so on first launch macOS or Windows may warn you.
+					On macOS, if it says the app is "damaged", run
+					<code>xattr -dr com.apple.quarantine /Applications/Arcagrad.app</code> once;
+					on Windows, choose <strong>More info → Run anyway</strong>.
+				</p>
+				<p class="note">
+					On <strong>Android</strong>, allow "install unknown apps" for your browser or files app, then open the <code>.apk</code>.
+					The <strong>iOS</strong> build is unsigned — install the <code>.ipa</code> with
+					<a href="https://altstore.io">AltStore</a> or <a href="https://sideloadly.io">Sideloadly</a>, which re-sign it with your own Apple ID.
+				</p>
+			</section>
+		</main>
+
+		<footer>
+			<div class="wrap foot">
+				<a class="brand" href="/"><img class="mark" src="/icon.svg" alt="" width="24" height="24" /> Arcagrad</a>
+				<div style="display:flex; gap:22px;">
+					<a href="/">Home</a>
+					<a href="/getting-started/introduction/">Docs</a>
+					<a href="/getting-started/install/">Install</a>
+					<a href={repo}>GitHub</a>
+				</div>
+			</div>
+		</footer>
+
+		<script is:inline>
+			(function () {
+				var p = (
+					(navigator.userAgentData && navigator.userAgentData.platform) ||
+					navigator.platform || navigator.userAgent || ''
+				).toLowerCase();
+				var os = /android/.test(p) ? 'android'
+					: /iphone|ipad|ipod/.test(p) ? 'ios'
+					: /win/.test(p) ? 'win'
+					: /linux|x11/.test(p) ? 'linux'
+					: /mac/.test(p) ? 'mac' : null;
+				if (!os) return;
+				var el = document.querySelector('.dl-card[data-os="' + os + '"]');
+				if (el) el.classList.add('featured');
+			})();
+		</script>
+	</body>
+</html>

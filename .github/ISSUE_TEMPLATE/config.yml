@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & setup help
+    url: https://github.com/KalininG/arcagrad/discussions/categories/q-a
+    about: '"How do I…", reverse-proxy/Docker setup, library organization questions — ask here.'
+  - name: Ideas & feedback (not yet concrete)
+    url: https://github.com/KalininG/arcagrad/discussions/categories/ideas
+    about: Early-stage ideas worth discussing before they become a concrete feature request.
+  - name: Authoring a plugin
+    url: https://github.com/KalininG/arcagrad/tree/main/docs/plugins
+    about: The plugin contract, SDK, and authoring guide — build support for a new source yourself, no core change needed.

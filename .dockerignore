@@ -1,0 +1,37 @@
+/target
+
+# Plugin crates build their own target/ dirs — keep them out of the build context.
+**/target
+# Plugin .wasm are built from source by build.rs during the image build.
+plugins/**/*.wasm
+/data
+.git
+**/*.rs.bk
+
+# The Node stage rebuilds these from source.
+/web/node_modules
+/web/build
+/web/.svelte-kit
+
+# Local library content and runtime data.
+/content
+/data
+
+# Separate projects not used by the server image.
+/client
+/site
+/tests
+
+# Local and potentially sensitive files.
+**/.DS_Store
+**/.env
+**/.env.*
+/*.md
+
+# Not needed
+/docs
+/scripts
+/.github
+
+# Generated/package artifacts.
+*.tar.gz

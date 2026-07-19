@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose an improvement or new capability.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Include both the current **problem** and the solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that you can't (or is too difficult) today?
+      placeholder: When my library has …, I want to …, but …
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution (optional)
+      description: If you have a concrete ideas share.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / workarounds you considered
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Is this about a specific content source (anilist, a book site, …)?
+      description: Source-specific behavior usually belongs in a plugin.
+      options:
+        - "No — core server / reader / library feature"
+        - "Yes — and a plugin could plausibly do it"
+        - "Yes — but it needs a new host capability (explain above)"
+    validations:
+      required: true

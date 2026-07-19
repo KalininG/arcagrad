@@ -1,0 +1,344 @@
+name: Client (desktop + mobile release)
+
+# Signing:
+# - Desktop installers are not OS code-signed.
+# - Android requires the ANDROID_* signing secrets.
+# - iOS is unsigned and intended for sideloading.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish (e.g. v0.1.0)'
+        required: true
+      apple:
+        description: 'Also build macOS + iOS (10x runner minutes on a private repo)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: client-release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+# Do not rename this to SIGN; appimagetool treats that variable as a GPG flag.
+env:
+  SIGN_UPDATER: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
+
+jobs:
+  verify-version:
+    name: tag == version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check tag matches committed version
+        run: bash scripts/version.sh check "${{ github.event.inputs.tag || github.ref_name }}"
+
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      desktop_matrix: ${{ steps.pick.outputs.matrix }}
+      apple: ${{ steps.pick.outputs.apple }}
+    steps:
+      - id: pick
+        run: |
+          mac='{"platform":"macos","runs-on":"macos-14"}'
+          win='{"platform":"windows","runs-on":"windows-latest"}'
+          lin='{"platform":"linux","runs-on":"ubuntu-latest"}'
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.inputs.apple }}" = "true" ]; then
+            echo "apple=true" >> "$GITHUB_OUTPUT"
+            echo "matrix={\"include\":[$mac,$win,$lin]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "apple=false" >> "$GITHUB_OUTPUT"
+            echo "matrix={\"include\":[$win,$lin]}" >> "$GITHUB_OUTPUT"
+          fi
+
+  desktop:
+    needs: [verify-version, setup]
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.desktop_matrix) }}
+    name: desktop (${{ matrix.platform }})
+    runs-on: ${{ matrix.runs-on }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: client/src-tauri
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Linux Tauri deps
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev \
+            librsvg2-dev patchelf libxdo-dev
+
+      - name: Client deps
+        working-directory: client
+        run: npm ci
+      - name: Web deps
+        working-directory: web
+        run: npm ci
+
+      - name: Build client (unsigned)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          # Hosted Linux runners cannot mount linuxdeploy's AppImage.
+          APPIMAGE_EXTRACT_AND_RUN: 1
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: client
+
+      - name: Stage assets (macOS)
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp client/src-tauri/target/release/bundle/dmg/*.dmg "dist/Arcagrad-macOS-AppleSilicon.dmg"
+          if [ "${SIGN_UPDATER}" = "true" ]; then
+            mkdir -p sig
+            cp client/src-tauri/target/release/bundle/macos/*.app.tar.gz     "dist/Arcagrad-macOS-AppleSilicon.app.tar.gz"
+            cp client/src-tauri/target/release/bundle/macos/*.app.tar.gz.sig "sig/darwin-aarch64.sig"
+          fi
+      - name: Stage assets (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp client/src-tauri/target/release/bundle/appimage/*.AppImage "dist/Arcagrad-Linux-x86_64.AppImage"
+          cp client/src-tauri/target/release/bundle/deb/*.deb           "dist/Arcagrad-Linux-amd64.deb"
+          cp client/src-tauri/target/release/bundle/rpm/*.rpm           "dist/Arcagrad-Linux-x86_64.rpm"
+          if [ "${SIGN_UPDATER}" = "true" ]; then
+            mkdir -p sig
+            cp client/src-tauri/target/release/bundle/appimage/*.AppImage.sig "sig/linux-x86_64.sig"
+          fi
+      - name: Stage assets (Windows)
+        if: matrix.platform == 'windows'
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item client/src-tauri/target/release/bundle/nsis/*-setup.exe dist/Arcagrad-Windows-Setup.exe
+          if ($env:SIGN_UPDATER -eq 'true') {
+            New-Item -ItemType Directory -Force -Path sig | Out-Null
+            Copy-Item client/src-tauri/target/release/bundle/nsis/*-setup.exe.sig sig/windows-x86_64.sig
+          }
+
+      - name: Render release body (unix)
+        if: matrix.platform != 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed "s|__TAG__|${{ github.event.inputs.tag || github.ref_name }}|g" \
+            .github/release-body-template.md > release-body.md
+      - name: Render release body (windows)
+        if: matrix.platform == 'windows'
+        shell: powershell
+        run: |
+          $tag = '${{ github.event.inputs.tag || github.ref_name }}'
+          $body = (Get-Content -Raw .github/release-body-template.md).Replace('__TAG__', $tag)
+          [System.IO.File]::WriteAllText("$PWD/release-body.md", $body)
+
+      - name: Publish to draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Arcagrad ${{ github.event.inputs.tag || github.ref_name }}
+          draft: true
+          prerelease: false
+          body_path: release-body.md
+          files: dist/*
+
+      - name: Upload signature for the manifest job
+        if: env.SIGN_UPDATER == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sig-${{ matrix.platform }}
+          path: sig/*.sig
+          retention-days: 1
+          if-no-files-found: error
+
+  android:
+    needs: verify-version
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: client/src-tauri
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: android-actions/setup-android@v3
+      - name: Install Android NDK
+        run: |
+          sdkmanager "ndk;26.3.11579264"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/26.3.11579264" >> "$GITHUB_ENV"
+
+      - name: Client deps
+        working-directory: client
+        run: npm ci
+      - name: Web deps
+        working-directory: web
+        run: npm ci
+
+      - name: Build APK (unsigned release)
+        working-directory: client
+        run: |
+          npx tauri android init
+          # tauri android init generates placeholder icons.
+          cp -R src-tauri/icons/android/. src-tauri/gen/android/app/src/main/res/
+          npx tauri android build --apk
+
+      - name: Sign APK
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KS="$RUNNER_TEMP/release.jks"
+          echo "$KS_B64" | base64 -d > "$KS"
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          UNSIGNED="$(find client/src-tauri/gen/android -path '*release*unsigned.apk' | head -1)"
+          test -n "$UNSIGNED" || { echo "no unsigned release APK found"; exit 1; }
+          echo "signing $UNSIGNED with build-tools $BT"
+          mkdir -p dist
+          "$BT/zipalign" -p -f 4 "$UNSIGNED" "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign --ks "$KS" --ks-pass "pass:$KS_PASS" \
+            --ks-key-alias "$KEY_ALIAS" --key-pass "pass:$KEY_PASS" \
+            --out dist/Arcagrad-Android.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" verify --print-certs dist/Arcagrad-Android.apk
+
+      - name: Publish APK to draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          draft: true
+          files: dist/Arcagrad-Android.apk
+
+  # Tauri does not export unsigned IPAs, so package the unsigned app manually.
+  ios:
+    needs: [verify-version, setup]
+    if: needs.setup.outputs.apple == 'true'
+    permissions:
+      contents: write
+    runs-on: macos-14
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: client/src-tauri
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Client deps
+        working-directory: client
+        run: npm ci
+      - name: Web deps
+        working-directory: web
+        run: npm ci
+
+      - name: Init iOS project
+        working-directory: client
+        run: |
+          npx tauri ios init
+          # tauri ios init generates placeholder icons.
+          APPICON="$(find src-tauri/gen/apple -type d -name AppIcon.appiconset | head -1)"
+          test -n "$APPICON" || { echo "AppIcon.appiconset not found"; exit 1; }
+          cp src-tauri/icons/ios/*.png "$APPICON"/
+
+      - name: Build unsigned .app and package IPA
+        working-directory: client/src-tauri/gen/apple
+        run: |
+          set -euo pipefail
+          PROJ="$(ls -d *.xcodeproj | head -1)"
+          SCHEME="$(xcodebuild -project "$PROJ" -list -json \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["project"]["schemes"][0])')"
+          echo "project=$PROJ scheme=$SCHEME"
+          xcodebuild -project "$PROJ" -scheme "$SCHEME" -configuration release \
+            -sdk iphoneos -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build
+          APP="$(find build/Build/Products -maxdepth 3 -name '*.app' | head -1)"
+          test -n "$APP" || { echo "no .app built"; exit 1; }
+          rm -rf Payload && mkdir -p Payload "$GITHUB_WORKSPACE/dist"
+          cp -R "$APP" Payload/
+          zip -qr "$GITHUB_WORKSPACE/dist/Arcagrad-iOS.ipa" Payload
+
+      - name: Publish IPA to draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          draft: true
+          files: dist/Arcagrad-iOS.ipa
+
+  updater-manifest:
+    name: publish latest.json
+    needs: [desktop, setup]
+    # The manifest requires signatures from all three desktop builds.
+    if: needs.setup.outputs.apple == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        if: env.SIGN_UPDATER == 'true'
+      - name: Fetch per-platform signatures
+        if: env.SIGN_UPDATER == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          path: sigs
+          pattern: sig-*
+          merge-multiple: true
+      - name: Assemble latest.json
+        if: env.SIGN_UPDATER == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="$(bash scripts/version.sh get)"
+          BASE="https://github.com/${GITHUB_REPOSITORY}/releases/latest/download"
+          MAC="$(tr -d '\n' < sigs/darwin-aarch64.sig)"
+          WIN="$(tr -d '\n' < sigs/windows-x86_64.sig)"
+          LIN="$(tr -d '\n' < sigs/linux-x86_64.sig)"
+          printf '{\n  "version": "%s",\n  "notes": "See the release notes.",\n  "platforms": {\n    "darwin-aarch64": { "signature": "%s", "url": "%s/Arcagrad-macOS-AppleSilicon.app.tar.gz" },\n    "windows-x86_64": { "signature": "%s", "url": "%s/Arcagrad-Windows-Setup.exe" },\n    "linux-x86_64": { "signature": "%s", "url": "%s/Arcagrad-Linux-x86_64.AppImage" }\n  }\n}\n' \
+            "$VER" "$MAC" "$BASE" "$WIN" "$BASE" "$LIN" "$BASE" > latest.json
+          python3 -c "import json; json.load(open('latest.json'))"
+          cat latest.json
+      - name: Publish latest.json to the release
+        if: env.SIGN_UPDATER == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          draft: true
+          files: latest.json

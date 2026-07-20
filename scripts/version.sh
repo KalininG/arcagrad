@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Keeps the server, plugin SDK, and Tauri app on the Cargo.toml version.
+# Keeps the server and Tauri app on one product version (Cargo.toml).
+# plugin-sdk versions independently.
 # client/package.json is intentionally independent; Tauri uses tauri.conf.json.
 #
 # Usage:
 #   scripts/version.sh get                 # print the current version
-#   scripts/version.sh check [<ref>]       # assert the three files agree; if <ref>
+#   scripts/version.sh check [<ref>]       # assert server + client agree; if <ref>
 #                                          #   (a tag like v0.2.0 or 0.2.0) is given,
 #                                          #   also assert they equal it. Exit 1 on mismatch.
-#   scripts/version.sh set <X.Y.Z>         # rewrite all three files to X.Y.Z + sync Cargo.lock
+#   scripts/version.sh set <X.Y.Z>         # rewrite both files to X.Y.Z + sync Cargo.lock
 #
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 CARGO="$ROOT/Cargo.toml"
-SDK="$ROOT/plugin-sdk/Cargo.toml"
 TAURI="$ROOT/client/src-tauri/tauri.conf.json"
 
 SEMVER_RE='^[0-9]+\.[0-9]+\.[0-9]+([-+.][0-9A-Za-z.-]+)?$'
@@ -30,15 +30,13 @@ set_tauri() { sed -i.bak -E 's/("version"[[:space:]]*:[[:space:]]*)"[^"]*"/\1"'"
 cmd_get() { cargo_ver "$CARGO"; }
 
 cmd_check() {
-  local vc vs vt
+  local vc vt
   vc="$(cargo_ver "$CARGO")"
-  vs="$(cargo_ver "$SDK")"
   vt="$(tauri_ver "$TAURI")"
 
-  if [[ "$vc" != "$vs" || "$vc" != "$vt" ]]; then
-    echo "version drift — the three files disagree:" >&2
+  if [[ "$vc" != "$vt" ]]; then
+    echo "version drift — server and client disagree:" >&2
     printf '  %-34s %s\n' "Cargo.toml" "$vc" >&2
-    printf '  %-34s %s\n' "plugin-sdk/Cargo.toml" "$vs" >&2
     printf '  %-34s %s\n' "client/src-tauri/tauri.conf.json" "$vt" >&2
     echo "run: scripts/version.sh set <X.Y.Z>" >&2
     exit 1
@@ -49,9 +47,9 @@ cmd_check() {
     if [[ "$want" != "$vc" ]]; then
       die "tag '$1' does not match committed version '$vc' — bump with scripts/version.sh set $want, commit, then re-tag"
     fi
-    echo "ok: tag $1 == version $vc (server, client, sdk all in sync)"
+    echo "ok: tag $1 == version $vc (server + client in sync)"
   else
-    echo "ok: version $vc (server, client, sdk all in sync)"
+    echo "ok: version $vc (server + client in sync)"
   fi
 }
 
@@ -62,13 +60,12 @@ cmd_set() {
   [[ "$new" =~ $SEMVER_RE ]] || die "'$new' is not a valid semver (X.Y.Z[-pre][+build])"
 
   set_cargo "$new" "$CARGO"
-  set_cargo "$new" "$SDK"
   set_tauri "$new" "$TAURI"
 
-  local vc vs vt
-  vc="$(cargo_ver "$CARGO")"; vs="$(cargo_ver "$SDK")"; vt="$(tauri_ver "$TAURI")"
-  [[ "$vc" == "$new" && "$vs" == "$new" && "$vt" == "$new" ]] \
-    || die "bump incomplete (cargo=$vc sdk=$vs tauri=$vt) — check the files by hand"
+  local vc vt
+  vc="$(cargo_ver "$CARGO")"; vt="$(tauri_ver "$TAURI")"
+  [[ "$vc" == "$new" && "$vt" == "$new" ]] \
+    || die "bump incomplete (cargo=$vc tauri=$vt) — check the files by hand"
 
   # Refresh local Cargo.lock entries when Cargo is available.
   if command -v cargo >/dev/null 2>&1; then
@@ -77,7 +74,7 @@ cmd_set() {
   fi
 
   echo "set version -> $new"
-  echo "  Cargo.toml, plugin-sdk/Cargo.toml, client/src-tauri/tauri.conf.json (+ Cargo.lock)"
+  echo "  Cargo.toml, client/src-tauri/tauri.conf.json (+ Cargo.lock)"
   echo "next: commit 'chore(release): v$new', open a PR, then tag the merge commit v$new"
 }
 

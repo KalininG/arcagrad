@@ -163,7 +163,7 @@ jobs:
 
       - name: Upload signature for the manifest job
         if: env.SIGN_UPDATER == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sig-${{ matrix.platform }}
           path: sig/*.sig

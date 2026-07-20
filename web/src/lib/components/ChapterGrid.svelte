@@ -52,6 +52,9 @@
 	function label(c) {
 		return c.title ?? c.number?.replace(/^Ch\.\s*/, 'Chapter ') ?? 'Chapter';
 	}
+	function openChapter(c, i) {
+		onopen?.(i === currentIdx ? cur : c.start_page, c);
+	}
 
 	const numberedCount = $derived(chapters.filter((c) => c.number).length);
 	const readCount = $derived(chapters.filter((c, i) => c.number && statusOf(i) === 'read').length);
@@ -135,11 +138,11 @@
 					: thumbSrc
 						? `Read ${label(c)}`
 						: `${label(c)} · read from page ${c.start_page + 1}`}
-				onclick={() => onopen?.(c.start_page, c)}
+				onclick={() => openChapter(c, i)}
 				onkeydown={(e) => {
 					if (onopen && (e.key === 'Enter' || e.key === ' ')) {
 						e.preventDefault();
-						onopen(c.start_page, c);
+						openChapter(c, i);
 					}
 				}}
 			>

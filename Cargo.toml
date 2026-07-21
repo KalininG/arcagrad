@@ -42,7 +42,7 @@ regex = "1"
 notify = "8"
 notify-debouncer-full = "0.6"
 sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "sqlite", "macros", "migrate"] }
-lru = "0.16"
+lru = "0.18"
 base64 = "0.22"
 sha1 = "0.10"
 argon2 = "0.5"

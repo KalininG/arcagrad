@@ -8,6 +8,7 @@
 			{ value: 'added_at', label: 'Date added', short: 'Date' },
 			{ value: 'title', label: 'Title' },
 			{ value: 'creator', label: 'Creator' },
+			{ value: 'rating', label: 'Rating' },
 			{ value: 'page_count', label: 'Length' },
 		],
 	} = $props();

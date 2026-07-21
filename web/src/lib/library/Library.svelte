@@ -92,7 +92,7 @@
 	}
 
 	const SORT_KEY = 'arca:sort';
-	const SORT_FIELDS = ['added_at', 'title', 'creator', 'page_count'];
+	const SORT_FIELDS = ['added_at', 'title', 'creator', 'rating', 'page_count'];
 	let sortField = $state('added_at');
 	let sortOrder = $state('desc');
 	if (typeof localStorage !== 'undefined') {

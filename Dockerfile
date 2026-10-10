@@ -46,7 +46,11 @@ FROM debian:trixie-slim AS runtime
 RUN apt-get update \
     && ( apt-get install -y --no-install-recommends libvips42t64 \
          || apt-get install -y --no-install-recommends libvips42 ) \
+    && apt-get install -y --no-install-recommends libjemalloc2 \
     && rm -rf /var/lib/apt/lists/* \
+    # One fixed path for LD_PRELOAD across amd64 and arm64.
+    && ln -s /usr/lib/*-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so.2 \
+    && test -e /usr/local/lib/libjemalloc.so.2 \
     && useradd -u 1000 -m -s /usr/sbin/nologin arca
 
 COPY --from=builder /app/target/release/arcagrad /usr/local/bin/arcagrad
@@ -54,9 +58,11 @@ COPY --from=builder /app/target/release/arcagrad /usr/local/bin/arcagrad
 ENV ARCA_CONTENT_DIR=/content \
     ARCA_DATA_DIR=/data \
     ARCA_BIND=0.0.0.0:3000 \
-    RUST_LOG=info,tower_http=info \
-    # Limit allocator fragmentation on long-running threaded servers.
-    MALLOC_ARENA_MAX=2
+    # jemalloc returns freed memory after scans and busy periods; glibc keeps it.
+    LD_PRELOAD=/usr/local/lib/libjemalloc.so.2 \
+    # Without the background thread jemalloc only purges on allocation, so an idle server keeps it.
+    # Huge pages can't be returned while partly in use, so opt out on hosts with THP set to always.
+    MALLOC_CONF=background_thread:true,thp:never
 
 RUN mkdir -p /content /data
 

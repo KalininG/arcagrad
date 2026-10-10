@@ -198,7 +198,7 @@
 		topHover = false;
 	}
 	function onPointerUp(e) {
-		if (e.target.closest('button, a')) return;
+		if (e.button !== 0 || e.target.closest('button, a')) return;
 		const dx = e.clientX - downX;
 		const dy = e.clientY - downY;
 		if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
@@ -383,9 +383,11 @@
 		opacity: 0;
 		will-change: opacity;
 		transform: translateZ(0);
+		pointer-events: none;
 	}
 	.layer.show {
 		opacity: 1;
+		pointer-events: auto;
 	}
 
 	.center {

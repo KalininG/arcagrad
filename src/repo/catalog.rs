@@ -1656,6 +1656,14 @@ mod tests {
             !facet.contains("TEMP B-TREE"),
             "kind facet must group via the index, no sort: {facet}"
         );
+
+        let count =
+            plan("SELECT COUNT(*) FROM items a WHERE a.series_id IS NULL AND a.kind = 'manga'")
+                .await;
+        assert!(
+            count.contains("COVERING INDEX idx_items_kind_oneshot"),
+            "per-kind one-shot count must be index-only: {count}"
+        );
     }
 
     #[sqlx::test]

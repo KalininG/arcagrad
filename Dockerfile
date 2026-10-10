@@ -58,7 +58,6 @@ COPY --from=builder /app/target/release/arcagrad /usr/local/bin/arcagrad
 ENV ARCA_CONTENT_DIR=/content \
     ARCA_DATA_DIR=/data \
     ARCA_BIND=0.0.0.0:3000 \
-    RUST_LOG=info,tower_http=info \
     # jemalloc returns freed memory after scans and busy periods; glibc keeps it.
     LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
 

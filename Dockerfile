@@ -59,7 +59,9 @@ ENV ARCA_CONTENT_DIR=/content \
     ARCA_DATA_DIR=/data \
     ARCA_BIND=0.0.0.0:3000 \
     # jemalloc returns freed memory after scans and busy periods; glibc keeps it.
-    LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
+    LD_PRELOAD=/usr/local/lib/libjemalloc.so.2 \
+    # Without the background thread jemalloc only purges on allocation, so an idle server keeps it.
+    MALLOC_CONF=background_thread:true
 
 RUN mkdir -p /content /data
 

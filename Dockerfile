@@ -61,7 +61,8 @@ ENV ARCA_CONTENT_DIR=/content \
     # jemalloc returns freed memory after scans and busy periods; glibc keeps it.
     LD_PRELOAD=/usr/local/lib/libjemalloc.so.2 \
     # Without the background thread jemalloc only purges on allocation, so an idle server keeps it.
-    MALLOC_CONF=background_thread:true
+    # Huge pages can't be returned while partly in use, so opt out on hosts with THP set to always.
+    MALLOC_CONF=background_thread:true,thp:never
 
 RUN mkdir -p /content /data
 

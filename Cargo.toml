@@ -45,7 +45,7 @@ sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio",
 lru = "0.18"
 base64 = "0.22"
 sha1 = "0.10"
-argon2 = "0.5"
+argon2 = "0.6"
 # Enables OsRng through argon2's re-export.
 rand_core = { version = "0.6", features = ["getrandom"] }
 rust-embed = "8.11.0"

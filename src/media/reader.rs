@@ -30,6 +30,20 @@ pub fn read_entry(path: &Path, name: &str) -> Result<(Vec<u8>, &'static str)> {
     }
 }
 
+/// `None` when the entry can't be streamed (RAR, or a zip entry the positioned reader rejects).
+pub fn open_entry(
+    path: &Path,
+    name: &str,
+) -> Result<Option<(crate::media::archive::EntryReader, &'static str)>> {
+    match get_or_open(path)? {
+        Handle::Rar => Ok(None),
+        Handle::Zip(index) => Ok(index
+            .open_entry(name)
+            .ok()
+            .map(|e| (e, crate::media::archive::content_type_for(name)))),
+    }
+}
+
 const MAX_ARCHIVE_HANDLES: usize = 32;
 
 #[derive(Clone)]

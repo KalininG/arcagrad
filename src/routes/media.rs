@@ -49,15 +49,90 @@ pub(crate) async fn page(
     let list = library::ensure_page_list(&state, id, path.clone()).await?;
     let name = list.get(n).ok_or(AppError::NotFound)?.clone();
 
+    // Held only while opening, so slow downloads don't block other heavy reads.
     let permit = acquire(&state).await?;
-    let (bytes, content_type) = tokio::task::spawn_blocking(move || {
+    let page = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        reader::read_entry(&path, &name)
+        match reader::open_entry(&path, &name)? {
+            Some((entry, content_type)) => Ok(PageSource::Stream(entry, content_type)),
+            None => {
+                let (bytes, content_type) = reader::read_entry(&path, &name)?;
+                Ok::<_, anyhow::Error>(PageSource::Buffered(bytes, content_type))
+            }
+        }
     })
     .await
     .map_err(|e| AppError::Internal(anyhow::anyhow!("task join error: {e}")))??;
 
-    Ok(image_response(content_type, &etag, bytes, versioned))
+    Ok(match page {
+        PageSource::Stream(entry, content_type) => {
+            stream_response(content_type, &etag, entry, versioned)
+        }
+        PageSource::Buffered(bytes, content_type) => {
+            image_response(content_type, &etag, bytes, versioned)
+        }
+    })
+}
+
+enum PageSource {
+    Stream(crate::media::archive::EntryReader, &'static str),
+    Buffered(Vec<u8>, &'static str),
+}
+
+const STREAM_CHUNK: usize = 256 * 1024;
+
+fn stream_response(
+    content_type: &str,
+    etag: &str,
+    mut entry: crate::media::archive::EntryReader,
+    versioned: bool,
+) -> Response {
+    use std::io::Read;
+    let len = entry.decoded_len();
+    let (tx, mut rx) = tokio::sync::mpsc::channel::<std::io::Result<axum::body::Bytes>>(2);
+    tokio::task::spawn_blocking(move || {
+        // Hold the last chunk back so a failed size/CRC check aborts the response.
+        let mut held: Option<axum::body::Bytes> = None;
+        loop {
+            let mut buf = vec![0u8; STREAM_CHUNK];
+            let mut filled = 0;
+            let res = loop {
+                match entry.read(&mut buf[filled..]) {
+                    Ok(0) => break Ok(()),
+                    Ok(n) => {
+                        filled += n;
+                        if filled == buf.len() {
+                            break Ok(());
+                        }
+                    }
+                    Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+                    Err(e) => break Err(e),
+                }
+            };
+            if let Err(e) = res {
+                tracing::warn!("streaming page failed: {e}");
+                let _ = tx.blocking_send(Err(e));
+                return;
+            }
+            if let Some(prev) = held.take() {
+                if tx.blocking_send(Ok(prev)).is_err() {
+                    return; // client went away
+                }
+            }
+            if filled == 0 {
+                return;
+            }
+            buf.truncate(filled);
+            held = Some(buf.into());
+        }
+    });
+    let body = axum::body::Body::from_stream(futures::stream::poll_fn(move |cx| rx.poll_recv(cx)));
+
+    let mut resp = image_response(content_type, etag, Vec::new(), versioned);
+    *resp.body_mut() = body;
+    resp.headers_mut()
+        .insert(header::CONTENT_LENGTH, header::HeaderValue::from(len));
+    resp
 }
 
 /// One page's preview thumbnail (WebP), generated lazily on first request and

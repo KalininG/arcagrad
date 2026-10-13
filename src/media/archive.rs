@@ -384,7 +384,15 @@ impl ZipIndex {
         }
     }
 
-    fn read_positioned(&self, rec: &CdRecord) -> Result<Vec<u8>> {
+    pub fn open_entry(&self, name: &str) -> Result<EntryReader> {
+        let rec = self
+            .by_name
+            .get(name)
+            .ok_or_else(|| anyhow::anyhow!("entry not found: {name}"))?;
+        self.open_positioned(rec)
+    }
+
+    fn open_positioned(&self, rec: &CdRecord) -> Result<EntryReader> {
         use anyhow::bail;
         if rec.flags & 0x0001 != 0 {
             bail!("encrypted entry"); // bit 0 = encrypted, unsupported, fall back
@@ -400,30 +408,75 @@ impl ZipIndex {
         let extra_len = u16::from_le_bytes(lh[28..30].try_into().unwrap()) as u64;
         let data_start = rec.local_header_offset + 30 + name_len + extra_len;
         file.seek(SeekFrom::Start(data_start))?;
-        let mut compressed = vec![0u8; rec.compressed_size as usize];
-        file.read_exact(&mut compressed)?;
+        let raw = std::io::BufReader::with_capacity(ENTRY_BUF, file.take(rec.compressed_size));
 
-        let raw = match rec.compression {
-            0 => compressed, // STORED (comic JPEGs are usually stored)
-            8 => {
-                let mut out = Vec::with_capacity(rec.uncompressed_size as usize);
-                flate2::read::DeflateDecoder::new(&compressed[..]).read_to_end(&mut out)?;
-                out
-            }
+        let inner: Box<dyn Read + Send> = match rec.compression {
+            0 => Box::new(raw), // STORED (comic JPEGs are usually stored)
+            8 => Box::new(flate2::read::DeflateDecoder::new(raw)),
             other => bail!("unsupported compression method {other}"),
         };
+        Ok(EntryReader {
+            inner,
+            expected_len: rec.uncompressed_size,
+            expected_crc: rec.crc32,
+            seen: 0,
+            hasher: crc32fast::Hasher::new(),
+        })
+    }
 
-        if raw.len() as u64 != rec.uncompressed_size {
-            bail!(
-                "size mismatch: got {}, want {}",
-                raw.len(),
-                rec.uncompressed_size
-            );
+    fn read_positioned(&self, rec: &CdRecord) -> Result<Vec<u8>> {
+        let mut entry = self.open_positioned(rec)?;
+        let mut out = Vec::with_capacity(entry.decoded_len() as usize);
+        entry.read_to_end(&mut out)?;
+        Ok(out)
+    }
+}
+
+const ENTRY_BUF: usize = 256 * 1024;
+
+/// Reaching the end checks length and CRC, so a corrupt entry surfaces as a read error.
+pub struct EntryReader {
+    inner: Box<dyn Read + Send>,
+    expected_len: u64,
+    expected_crc: u32,
+    seen: u64,
+    hasher: crc32fast::Hasher,
+}
+
+impl EntryReader {
+    pub fn decoded_len(&self) -> u64 {
+        self.expected_len
+    }
+}
+
+impl Read for EntryReader {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        use std::io::{Error, ErrorKind};
+        let n = self.inner.read(buf)?;
+        if n == 0 {
+            if self.seen != self.expected_len {
+                return Err(Error::new(
+                    ErrorKind::InvalidData,
+                    format!(
+                        "size mismatch: got {}, want {}",
+                        self.seen, self.expected_len
+                    ),
+                ));
+            }
+            if self.hasher.clone().finalize() != self.expected_crc {
+                return Err(Error::new(ErrorKind::InvalidData, "crc mismatch"));
+            }
+            return Ok(0);
         }
-        if crc32fast::hash(&raw) != rec.crc32 {
-            bail!("crc mismatch");
+        self.seen += n as u64;
+        if self.seen > self.expected_len {
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                format!("size mismatch: more than {} bytes", self.expected_len),
+            ));
         }
-        Ok(raw)
+        self.hasher.update(&buf[..n]);
+        Ok(n)
     }
 }
 
@@ -698,6 +751,63 @@ mod tests {
                 "an unknown entry errors, never panics"
             );
             std::fs::remove_file(&path).ok();
+        }
+    }
+
+    #[test]
+    fn streamed_entry_matches_buffered_read_in_small_reads() {
+        let data: Vec<u8> = (0..700_000u32)
+            .map(|i| (i.wrapping_mul(2654435761) >> 11) as u8)
+            .collect();
+        for method in [
+            zip::CompressionMethod::Stored,
+            zip::CompressionMethod::Deflated,
+        ] {
+            let path = temp_zip(
+                &format!("stream-{method:?}"),
+                &zip_with(&[("001.png", &data), ("002.jpg", &[])], method),
+            );
+            let index = ZipIndex::open(&path).unwrap();
+            let mut entry = index.open_entry("001.png").unwrap();
+            assert_eq!(entry.decoded_len(), data.len() as u64);
+            let mut got = Vec::new();
+            let mut chunk = [0u8; 4093];
+            loop {
+                let n = entry.read(&mut chunk).unwrap();
+                if n == 0 {
+                    break;
+                }
+                got.extend_from_slice(&chunk[..n]);
+            }
+            assert_eq!(got, data, "{method:?} stream must equal the original bytes");
+
+            let mut empty = index.open_entry("002.jpg").unwrap();
+            assert_eq!(empty.read(&mut chunk).unwrap(), 0);
+            assert!(index.open_entry("missing.jpg").is_err());
+            std::fs::remove_file(&path).ok();
+        }
+    }
+
+    #[test]
+    fn streamed_corrupt_entry_errors_at_the_end() {
+        for method in [
+            zip::CompressionMethod::Stored,
+            zip::CompressionMethod::Deflated,
+        ] {
+            let data: Vec<u8> = (0..50_000u32).map(|i| (i % 251) as u8).collect();
+            let mut bad = zip_with(&[("001.jpg", &data)], method);
+            let mid = 30 + "001.jpg".len() + 40;
+            bad[mid] ^= 0xFF;
+            let path = temp_zip(&format!("stream-corrupt-{method:?}"), &bad);
+            let index = ZipIndex::open(&path).unwrap();
+            let res = index
+                .open_entry("001.jpg")
+                .and_then(|mut e| Ok(std::io::copy(&mut e, &mut std::io::sink())?));
+            std::fs::remove_file(&path).ok();
+            assert!(
+                res.is_err(),
+                "{method:?}: a corrupted entry must fail the stream, never complete it"
+            );
         }
     }
 

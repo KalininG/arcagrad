@@ -643,8 +643,14 @@ pub async fn run_job(
 
             let entry_ready =
                 repo::recommendation_index_ready(&state.read, repo::ENTRY_NEIGHBORS_INDEX).await?;
-            if !entry_ready || changed > 0 {
-                enqueue_full_recompute(&state.write, "recompute_entry_neighbors").await?;
+            match plan_entry_recompute(entry_ready, bulk_change, &stats, &enriched) {
+                EntryRecompute::Full => {
+                    enqueue_full_recompute(&state.write, "recompute_entry_neighbors").await?;
+                }
+                EntryRecompute::Items(items) => {
+                    enqueue_entry_recompute_for_items(state, &items).await?;
+                }
+                EntryRecompute::Nothing => {}
             }
             if !stats.moved_kind_changed.is_empty() || !stats.moved_leaf_status_changed.is_empty() {
                 state.similar.clear();
@@ -1290,11 +1296,49 @@ async fn recompute_entry(
 }
 
 pub(crate) async fn enqueue_entry_recompute_for_item(state: &AppState, item_id: i64) -> Result<()> {
-    let map = repo::leaf_series_map(&state.read, &[item_id]).await?;
-    let key = map.get(&item_id).map(|&s| -s).unwrap_or(item_id);
-    let payload = serde_json::json!({ "entries": [key] }).to_string();
+    enqueue_entry_recompute_for_items(state, &[item_id]).await
+}
+
+async fn enqueue_entry_recompute_for_items(state: &AppState, item_ids: &[i64]) -> Result<()> {
+    let map = repo::leaf_series_map(&state.read, item_ids).await?;
+    let mut keys: Vec<i64> = item_ids
+        .iter()
+        .map(|id| map.get(id).map(|&s| -s).unwrap_or(*id))
+        .collect();
+    keys.sort();
+    keys.dedup();
+    let payload = serde_json::json!({ "entries": keys }).to_string();
     enqueue(&state.write, "recompute_entry_neighbors", Some(&payload)).await?;
     Ok(())
+}
+
+#[derive(Debug, PartialEq)]
+enum EntryRecompute {
+    Full,
+    Items(Vec<i64>),
+    Nothing,
+}
+
+/// Untagged additions and plain moves leave every entry's tags unchanged, so only items
+/// that gained tags need recomputing.
+fn plan_entry_recompute(
+    entry_ready: bool,
+    bulk_change: bool,
+    stats: &crate::scanner::ScanStats,
+    enriched: &[i64],
+) -> EntryRecompute {
+    // A removed or regrouped item may have been a series volume, which the scan can no
+    // longer attribute, so those still rebuild everything.
+    let structural = stats.removed > 0
+        || !stats.moved_kind_changed.is_empty()
+        || !stats.moved_leaf_status_changed.is_empty();
+    if !entry_ready || bulk_change || structural {
+        EntryRecompute::Full
+    } else if enriched.is_empty() {
+        EntryRecompute::Nothing
+    } else {
+        EntryRecompute::Items(enriched.to_vec())
+    }
 }
 
 pub(crate) async fn enqueue_entry_recompute_for_series(
@@ -1670,6 +1714,54 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(rows, vec![(first, None)]);
+    }
+
+    #[test]
+    fn entry_recompute_is_targeted_for_small_changes() {
+        use crate::scanner::ScanStats;
+        let added = ScanStats {
+            added: 3,
+            moved: 2,
+            ..Default::default()
+        };
+        assert_eq!(
+            plan_entry_recompute(true, false, &added, &[]),
+            EntryRecompute::Nothing,
+            "untagged additions and plain moves change no entry"
+        );
+        assert_eq!(
+            plan_entry_recompute(true, false, &added, &[7, 9]),
+            EntryRecompute::Items(vec![7, 9])
+        );
+        assert_eq!(
+            plan_entry_recompute(false, false, &added, &[]),
+            EntryRecompute::Full,
+            "a missing index is always built in full"
+        );
+        assert_eq!(
+            plan_entry_recompute(true, true, &added, &[7]),
+            EntryRecompute::Full
+        );
+        for structural in [
+            ScanStats {
+                removed: 1,
+                ..Default::default()
+            },
+            ScanStats {
+                moved_kind_changed: vec![4],
+                ..Default::default()
+            },
+            ScanStats {
+                moved_leaf_status_changed: vec![4],
+                ..Default::default()
+            },
+        ] {
+            assert_eq!(
+                plan_entry_recompute(true, false, &structural, &[]),
+                EntryRecompute::Full,
+                "{structural:?}"
+            );
+        }
     }
 
     #[sqlx::test]

@@ -1,7 +1,9 @@
 //! Page/thumbnail/cover serving, and EPUB manifest/resource.
 
 use super::*;
+use crate::media::archive::EntryReader;
 use crate::server::auth;
+use axum::body::Bytes;
 
 /// Serve one original page image from a paginated item.
 #[utoipa::path(
@@ -75,7 +77,7 @@ pub(crate) async fn page(
 }
 
 enum PageSource {
-    Stream(crate::media::archive::EntryReader, &'static str),
+    Stream(EntryReader, &'static str),
     Buffered(Vec<u8>, &'static str),
 }
 
@@ -84,55 +86,62 @@ const STREAM_CHUNK: usize = 256 * 1024;
 fn stream_response(
     content_type: &str,
     etag: &str,
-    mut entry: crate::media::archive::EntryReader,
+    entry: EntryReader,
     versioned: bool,
 ) -> Response {
-    use std::io::Read;
     let len = entry.decoded_len();
-    let (tx, mut rx) = tokio::sync::mpsc::channel::<std::io::Result<axum::body::Bytes>>(2);
-    tokio::task::spawn_blocking(move || {
-        // Hold the last chunk back so a failed size/CRC check aborts the response.
-        let mut held: Option<axum::body::Bytes> = None;
+    // A blocking thread is borrowed per chunk, so a slow client waits without holding one.
+    let chunks = futures::stream::unfold(Some((entry, None)), |state| async move {
+        let (mut entry, mut held): (EntryReader, Option<Bytes>) = state?;
         loop {
-            let mut buf = vec![0u8; STREAM_CHUNK];
-            let mut filled = 0;
-            let res = loop {
-                match entry.read(&mut buf[filled..]) {
-                    Ok(0) => break Ok(()),
-                    Ok(n) => {
-                        filled += n;
-                        if filled == buf.len() {
-                            break Ok(());
-                        }
-                    }
-                    Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
-                    Err(e) => break Err(e),
-                }
+            let (back, res) = match tokio::task::spawn_blocking(move || {
+                let res = read_chunk(&mut entry);
+                (entry, res)
+            })
+            .await
+            {
+                Ok(v) => v,
+                Err(e) => return Some((Err(std::io::Error::other(e)), None)),
             };
-            if let Err(e) = res {
-                tracing::warn!("streaming page failed: {e}");
-                let _ = tx.blocking_send(Err(e));
-                return;
-            }
-            if let Some(prev) = held.take() {
-                if tx.blocking_send(Ok(prev)).is_err() {
-                    return; // client went away
+            entry = back;
+            match res {
+                Err(e) => {
+                    tracing::warn!("streaming page failed: {e}");
+                    return Some((Err(e), None));
                 }
+                // Hold the last chunk back so a failed size/CRC check aborts the response.
+                Ok(chunk) if chunk.is_empty() => return held.map(|h| (Ok(h), None)),
+                Ok(chunk) => match held.replace(chunk) {
+                    Some(prev) => return Some((Ok(prev), Some((entry, held)))),
+                    None => continue,
+                },
             }
-            if filled == 0 {
-                return;
-            }
-            buf.truncate(filled);
-            held = Some(buf.into());
         }
     });
-    let body = axum::body::Body::from_stream(futures::stream::poll_fn(move |cx| rx.poll_recv(cx)));
+    let body = axum::body::Body::from_stream(chunks);
 
     let mut resp = image_response(content_type, etag, Vec::new(), versioned);
     *resp.body_mut() = body;
     resp.headers_mut()
         .insert(header::CONTENT_LENGTH, header::HeaderValue::from(len));
     resp
+}
+
+/// Up to `STREAM_CHUNK` bytes; empty once the entry is exhausted and verified.
+fn read_chunk(entry: &mut EntryReader) -> std::io::Result<Bytes> {
+    use std::io::Read;
+    let mut buf = vec![0u8; STREAM_CHUNK];
+    let mut filled = 0;
+    while filled < buf.len() {
+        match entry.read(&mut buf[filled..]) {
+            Ok(0) => break,
+            Ok(n) => filled += n,
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+            Err(e) => return Err(e),
+        }
+    }
+    buf.truncate(filled);
+    Ok(buf.into())
 }
 
 /// One page's preview thumbnail (WebP), generated lazily on first request and

@@ -1,11 +1,11 @@
 <script>
-	import { page } from '$app/stores';
-	import { items as itemsApi, ApiError } from '$lib/api.js';
-	import PagedReader from '$lib/reader/PagedReader.svelte';
-	import VerticalReader from '$lib/reader/VerticalReader.svelte';
-	import ReflowableReader from '$lib/reader/ReflowableReader.svelte';
+	import { page } from '$app/state';
+	import { items as itemsApi, ApiError } from '#lib/api.js';
+	import PagedReader from '#lib/reader/PagedReader.svelte';
+	import VerticalReader from '#lib/reader/VerticalReader.svelte';
+	import ReflowableReader from '#lib/reader/ReflowableReader.svelte';
 
-	let id = $derived($page.params.id);
+	let id = $derived(page.params.id);
 	let detail = $state(null);
 	let loading = $state(true);
 	let error = $state(null);
@@ -17,7 +17,7 @@
 		}
 		return detail.reading_mode === 'vertical' ? 'vertical' : 'paged';
 	});
-	const openContents = $derived($page.url.searchParams.get('contents') === '1');
+	const openContents = $derived(page.url.searchParams.get('contents') === '1');
 
 	async function load(myId) {
 		loading = true;

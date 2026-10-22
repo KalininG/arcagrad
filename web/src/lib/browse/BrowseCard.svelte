@@ -1,9 +1,9 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { media } from '$lib/api.js';
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import TypographicCover from '$lib/components/TypographicCover.svelte';
-	import FavCount from '$lib/components/FavCount.svelte';
+	import { media } from '#lib/api.js';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import TypographicCover from '#lib/components/TypographicCover.svelte';
+	import FavCount from '#lib/components/FavCount.svelte';
 
 	let { pluginId, item, match = null, onpreview, actions } = $props();
 

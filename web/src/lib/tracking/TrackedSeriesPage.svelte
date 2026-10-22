@@ -1,12 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
-	import { series as seriesApi, upcoming as upcomingApi, media } from '$lib/api.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import TrackerModal from '$lib/components/TrackerModal.svelte';
-	import ScheduleFooter from '$lib/components/ScheduleFooter.svelte';
-	import { relativeTime } from '$lib/format.js';
+	import { series as seriesApi, upcoming as upcomingApi, media } from '#lib/api.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import Loading from '#lib/components/ui/Loading.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import TrackerModal from '#lib/components/TrackerModal.svelte';
+	import ScheduleFooter from '#lib/components/ScheduleFooter.svelte';
+	import { relativeTime } from '#lib/format.js';
 
 	let rows = $state([]);
 	let loading = $state(true);

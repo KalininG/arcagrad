@@ -1,5 +1,5 @@
 <script>
-	import { sanitizeHtml } from '$lib/sanitize.js';
+	import { sanitizeHtml } from '#lib/sanitize.js';
 
 	let { comments = [], itemId = '', pageCount = 0 } = $props();
 

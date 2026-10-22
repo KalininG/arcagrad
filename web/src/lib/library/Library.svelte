@@ -1,23 +1,23 @@
 <script>
 	import { onMount } from 'svelte';
-	import { page as pageStore } from '$app/stores';
+	import { page as pageState } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { items as itemsApi, media, ApiError } from '$lib/api.js';
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import LibrarySearch from '$lib/library/LibrarySearch.svelte';
-	import LibraryTabs from '$lib/library/LibraryTabs.svelte';
-	import { parseSearch } from '$lib/librarySearch.js';
-	import Shelf from '$lib/components/ui/Shelf.svelte';
-	import SortControl from '$lib/components/ui/SortControl.svelte';
-	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import DeleteConfirm from '$lib/components/ui/DeleteConfirm.svelte';
-	import { kindLabel, refreshKinds } from '$lib/kinds.js';
-	import { gridColumns, rowAlignedPageSize } from '$lib/grid.js';
-	import { coverId } from '$lib/cards.js';
-	import { relativeTime } from '$lib/format.js';
-	import { isGuest } from '$lib/session.js';
-	import Loading from '$lib/components/ui/Loading.svelte';
+	import { items as itemsApi, media, ApiError } from '#lib/api.js';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import LibrarySearch from '#lib/library/LibrarySearch.svelte';
+	import LibraryTabs from '#lib/library/LibraryTabs.svelte';
+	import { parseSearch } from '#lib/librarySearch.js';
+	import Shelf from '#lib/components/ui/Shelf.svelte';
+	import SortControl from '#lib/components/ui/SortControl.svelte';
+	import Pagination from '#lib/components/ui/Pagination.svelte';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import DeleteConfirm from '#lib/components/ui/DeleteConfirm.svelte';
+	import { kindLabel, refreshKinds } from '#lib/kinds.js';
+	import { gridColumns, rowAlignedPageSize } from '#lib/grid.js';
+	import { coverId } from '#lib/cards.js';
+	import { relativeTime } from '#lib/format.js';
+	import { isGuest } from '#lib/session.js';
+	import Loading from '#lib/components/ui/Loading.svelte';
 
 	let { kind = null } = $props();
 	const heading = $derived(kind ? kindLabel(kind) : 'Library');
@@ -338,7 +338,7 @@
 	}
 
 	onMount(() => {
-		const sp = $pageStore.url.searchParams;
+		const sp = pageState.url.searchParams;
 		const t = sp.get('tags');
 		const qp = sp.get('q');
 		const pg = parseInt(sp.get('page') ?? '', 10);
@@ -363,7 +363,7 @@
 		const base = kind ? `/${encodeURIComponent(kind)}` : '/';
 		const url = qs ? `${base}?${qs}` : base;
 		if (url !== location.pathname + location.search) {
-			goto(url, { replaceState: true, keepFocus: true, noScroll: true });
+			goto(url, { replace: true, reset: false });
 		}
 	}
 	let urlInited = false;

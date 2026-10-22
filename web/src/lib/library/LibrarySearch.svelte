@@ -1,8 +1,8 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { search as searchApi, media } from '$lib/api.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import { trailingToken } from '$lib/librarySearch.js';
+	import { search as searchApi, media } from '#lib/api.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import { trailingToken } from '#lib/librarySearch.js';
 
 	let { value = $bindable(''), kind = null, oncommit } = $props();
 

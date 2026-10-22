@@ -73,7 +73,7 @@ jobs:
           workspaces: client/src-tauri
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Linux Tauri deps
         if: matrix.platform == 'linux'
@@ -190,7 +190,7 @@ jobs:
           workspaces: client/src-tauri
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
 
       - uses: android-actions/setup-android@v4
       - name: Install Android NDK
@@ -262,7 +262,7 @@ jobs:
           workspaces: client/src-tauri
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
       - name: Client deps
         working-directory: client
         run: npm ci

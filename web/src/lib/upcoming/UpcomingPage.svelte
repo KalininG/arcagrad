@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
-	import { upcoming as upcomingApi, media } from '$lib/api.js';
-	import { currentUser } from '$lib/session.js';
-	import ScheduleFooter from '$lib/components/ScheduleFooter.svelte';
+	import { upcoming as upcomingApi, media } from '#lib/api.js';
+	import { currentUser } from '#lib/session.js';
+	import ScheduleFooter from '#lib/components/ScheduleFooter.svelte';
 
 	let { embedded = false } = $props();
 

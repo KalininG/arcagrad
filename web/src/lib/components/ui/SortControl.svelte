@@ -1,5 +1,5 @@
 <script>
-	import Dropdown from '$lib/components/ui/Dropdown.svelte';
+	import Dropdown from '#lib/components/ui/Dropdown.svelte';
 
 	let {
 		field = $bindable('added_at'),

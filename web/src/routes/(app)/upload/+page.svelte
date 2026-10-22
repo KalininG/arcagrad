@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Dropdown from '$lib/components/ui/Dropdown.svelte';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Dropdown from '#lib/components/ui/Dropdown.svelte';
 	import {
 		items as itemsApi,
 		kinds as kindsApi,
@@ -11,9 +11,9 @@
 		credentials as credsApi,
 		media,
 		ApiError,
-	} from '$lib/api.js';
-	import { currentUser } from '$lib/session.js';
-	import { kinds as kindsStore, ensureKinds, refreshKinds, kindLabel } from '$lib/kinds.js';
+	} from '#lib/api.js';
+	import { currentUser } from '#lib/session.js';
+	import { kinds as kindsStore, ensureKinds, refreshKinds, kindLabel } from '#lib/kinds.js';
 
 	const isAdmin = $derived($currentUser?.role === 'admin');
 

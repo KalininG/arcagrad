@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { auth, ApiError } from '$lib/api.js';
+	import { auth, ApiError } from '#lib/api.js';
 
 	let setupRequired = $state(false);
 	let signupEnabled = $state(false);

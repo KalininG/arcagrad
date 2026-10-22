@@ -2,9 +2,9 @@
 	import { onMount, onDestroy, untrack } from 'svelte';
 	import { get } from 'svelte/store';
 	import { goto, replaceState } from '$app/navigation';
-	import { page as pageStore } from '$app/stores';
-	import { items as itemsApi, media } from '$lib/api.js';
-	import { isGuest } from '$lib/session.js';
+	import { page as pageState } from '$app/state';
+	import { items as itemsApi, media } from '#lib/api.js';
+	import { isGuest } from '#lib/session.js';
 	import ReaderChrome from './ReaderChrome.svelte';
 
 	let { id = null, detail = null, source = null } = $props();
@@ -280,7 +280,7 @@
 			if (url.searchParams.get('page') === String(p + 1)) return;
 			url.searchParams.set('page', String(p + 1));
 			try {
-				replaceState(url, get(pageStore).state ?? {});
+				replaceState(url, pageState.state ?? {});
 			} catch {
 				/* ignored */
 			}

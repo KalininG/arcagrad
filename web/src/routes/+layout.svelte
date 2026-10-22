@@ -2,9 +2,9 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { configureApi, auth as authApi } from '$lib/api.js';
-	import DownloadBubble from '$lib/components/DownloadBubble.svelte';
-	import DesktopUpdate from '$lib/components/DesktopUpdate.svelte';
+	import { configureApi, auth as authApi } from '#lib/api.js';
+	import DownloadBubble from '#lib/components/DownloadBubble.svelte';
+	import DesktopUpdate from '#lib/components/DesktopUpdate.svelte';
 
 	let { children } = $props();
 

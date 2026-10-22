@@ -2,7 +2,7 @@
 	import CoverThumbnail from './CoverThumbnail.svelte';
 	import Pagination from './ui/Pagination.svelte';
 	import PageThumbGrid from './PageThumbGrid.svelte';
-	import { media } from '$lib/api.js';
+	import { media } from '#lib/api.js';
 
 	let {
 		chapters = [],

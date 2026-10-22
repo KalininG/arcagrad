@@ -1,3 +1,5 @@
+import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
@@ -5,7 +7,12 @@ const API = process.env.ARCA_DEV_API ?? 'http://127.0.0.1:3000';
 const tauriHost = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [
+		sveltekit({
+			preprocess: vitePreprocess(),
+			adapter: adapter({ fallback: 'index.html', strict: false }),
+		}),
+	],
 	server: {
 		host: tauriHost || false,
 		strictPort: !!tauriHost,

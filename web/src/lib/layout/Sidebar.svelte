@@ -1,12 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
-	import { assets } from '$app/paths';
-	import { orderedKinds, setKindOrder, ensureKinds, kindLabel, kindHref } from '$lib/kinds.js';
-	import { auth } from '$lib/api.js';
-	import { currentUser } from '$lib/session.js';
-	import { loadCatalog, updateCount } from '$lib/plugins/catalog.js';
-	import { loadFollows, followNewCount } from '$lib/follows/store.js';
+	import { page } from '$app/state';
+	import { asset } from '$app/paths';
+	import { orderedKinds, setKindOrder, ensureKinds, kindLabel, kindHref } from '#lib/kinds.js';
+	import { auth } from '#lib/api.js';
+	import { currentUser } from '#lib/session.js';
+	import { loadCatalog, updateCount } from '#lib/plugins/catalog.js';
+	import { loadFollows, followNewCount } from '#lib/follows/store.js';
 
 	let { me, open = false, onclose } = $props();
 	const who = $derived($currentUser ?? me);
@@ -103,7 +103,7 @@
 		})),
 	]);
 
-	const path = $derived($page.url.pathname);
+	const path = $derived(page.url.pathname);
 	const isActive = (href, p) => (href === '/' ? p === '/' : p === href || p.startsWith(href + '/'));
 	const sectionOpen = (item, p) => p === item.href || p.startsWith(item.href + '/');
 </script>
@@ -111,7 +111,7 @@
 <aside class="sidebar" class:open>
 	<div class="head">
 		<div class="brand">
-			<img class="logo" src="{assets}/favicon.svg" alt="" />
+			<img class="logo" src={asset('favicon.svg')} alt="" />
 			<span class="name">Arcagrad</span>
 		</div>
 		<button class="close" onclick={onclose} aria-label="Close menu" type="button">

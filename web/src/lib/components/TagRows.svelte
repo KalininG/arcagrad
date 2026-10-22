@@ -1,7 +1,7 @@
 <script>
 	import { MediaQuery } from 'svelte/reactivity';
-	import { tagCounts } from '$lib/tagstats.js';
-	import { groupTags, tagHref } from '$lib/tags.js';
+	import { tagCounts } from '#lib/tagstats.js';
+	import { groupTags, tagHref } from '#lib/tags.js';
 
 	let { tags = [], kind = '', before = [], after = [], hiddenNamespaces = [] } = $props();
 	const narrow = new MediaQuery('(max-width: 720px)');

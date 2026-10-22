@@ -1,12 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { auth, ApiError, apiAuthMode } from '$lib/api.js';
-	import { currentUser, setUser, performLogout } from '$lib/session.js';
-	import DeleteConfirm from '$lib/components/ui/DeleteConfirm.svelte';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import StatsView from '$lib/stats/StatsView.svelte';
-	import DisplaySettings from '$lib/profile/DisplaySettings.svelte';
+	import { auth, ApiError, apiAuthMode } from '#lib/api.js';
+	import { currentUser, setUser, performLogout } from '#lib/session.js';
+	import DeleteConfirm from '#lib/components/ui/DeleteConfirm.svelte';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import StatsView from '#lib/stats/StatsView.svelte';
+	import DisplaySettings from '#lib/profile/DisplaySettings.svelte';
 
 	const me = $derived($currentUser);
 	const TAB_IDS = ['stats', 'display', 'keys'];
@@ -24,7 +24,7 @@
 		activeTab = id;
 		const url = new URL(location.href);
 		url.searchParams.set('tab', id);
-		goto(url, { replaceState: true, keepFocus: true, noScroll: true });
+		goto(url, { replace: true, reset: false });
 	}
 	const bearer = apiAuthMode() === 'bearer';
 

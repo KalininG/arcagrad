@@ -1,9 +1,9 @@
 <script>
 	import { onMount } from 'svelte';
-	import { kinds as kindsApi, media } from '$lib/api.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import { CAP_LABEL, monogram, tintOf } from '$lib/plugins/common.js';
-	import { install, realVersion, realAuthor } from '$lib/plugins/catalog.js';
+	import { kinds as kindsApi, media } from '#lib/api.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import { CAP_LABEL, monogram, tintOf } from '#lib/plugins/common.js';
+	import { install, realVersion, realAuthor } from '#lib/plugins/catalog.js';
 
 	let { entry, onclose, oninstalled } = $props();
 	const metaLine = [

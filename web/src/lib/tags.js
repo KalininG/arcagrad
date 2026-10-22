@@ -1,4 +1,4 @@
-import { kindHref } from '$lib/kinds.js';
+import { kindHref } from '#lib/kinds.js';
 
 export const NS_ORDER = [
 	'parody',

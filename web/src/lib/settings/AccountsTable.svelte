@@ -1,10 +1,10 @@
 <script>
 	import { onMount } from 'svelte';
-	import { users as usersApi, ApiError } from '$lib/api.js';
-	import { currentUser } from '$lib/session.js';
-	import DeleteConfirm from '$lib/components/ui/DeleteConfirm.svelte';
-	import Dropdown from '$lib/components/ui/Dropdown.svelte';
-	import { relativeTime } from '$lib/format.js';
+	import { users as usersApi, ApiError } from '#lib/api.js';
+	import { currentUser } from '#lib/session.js';
+	import DeleteConfirm from '#lib/components/ui/DeleteConfirm.svelte';
+	import Dropdown from '#lib/components/ui/Dropdown.svelte';
+	import { relativeTime } from '#lib/format.js';
 
 	const me = $derived($currentUser);
 	const PAGE_SIZE = 50;

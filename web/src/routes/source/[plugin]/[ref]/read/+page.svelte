@@ -1,17 +1,17 @@
 <script>
-	import { page } from '$app/stores';
-	import { plugins as pluginsApi, media, ApiError } from '$lib/api.js';
-	import PagedReader from '$lib/reader/PagedReader.svelte';
-	import VerticalReader from '$lib/reader/VerticalReader.svelte';
+	import { page } from '$app/state';
+	import { plugins as pluginsApi, media, ApiError } from '#lib/api.js';
+	import PagedReader from '#lib/reader/PagedReader.svelte';
+	import VerticalReader from '#lib/reader/VerticalReader.svelte';
 
-	const plugin = $derived(decodeURIComponent($page.params.plugin));
-	const reference = $derived(decodeURIComponent($page.params.ref));
-	const kind = $derived($page.url.searchParams.get('kind') ?? '');
-	const back = $derived($page.url.searchParams.get('back') ?? '');
+	const plugin = $derived(decodeURIComponent(page.params.plugin));
+	const reference = $derived(decodeURIComponent(page.params.ref));
+	const kind = $derived(page.url.searchParams.get('kind') ?? '');
+	const back = $derived(page.url.searchParams.get('back') ?? '');
 	const start = $derived(
-		Math.max(0, (parseInt($page.url.searchParams.get('page') ?? '1', 10) || 1) - 1),
+		Math.max(0, (parseInt(page.url.searchParams.get('page') ?? '1', 10) || 1) - 1),
 	);
-	const title = $derived($page.state?.title ?? '');
+	const title = $derived(page.state?.title ?? '');
 
 	let pages = $state([]);
 	let loading = $state(true);

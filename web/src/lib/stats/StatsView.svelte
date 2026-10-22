@@ -1,9 +1,9 @@
 <script>
 	import { onMount } from 'svelte';
-	import { stats as statsApi, kinds as kindsApi, media, ApiError } from '$lib/api.js';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import { relativeTime } from '$lib/format.js';
+	import { stats as statsApi, kinds as kindsApi, media, ApiError } from '#lib/api.js';
+	import Loading from '#lib/components/ui/Loading.svelte';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import { relativeTime } from '#lib/format.js';
 
 	const DAY = 86400;
 	let data = $state(null);

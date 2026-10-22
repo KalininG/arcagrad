@@ -1,8 +1,8 @@
 //! Password, session, and API-key authentication.
 
 use anyhow::{anyhow, Result};
-use argon2::password_hash::rand_core::{OsRng, RngCore};
-use argon2::password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString};
+use argon2::password_hash::phc::PasswordHash;
+use argon2::password_hash::{PasswordHasher, PasswordVerifier};
 use argon2::{Algorithm, Argon2, Params, Version};
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
@@ -34,9 +34,9 @@ fn argon() -> Argon2<'static> {
 }
 
 fn hash_password(password: &str) -> Result<String> {
-    let salt = SaltString::generate(&mut OsRng);
+    // Generates a random 16-byte salt from the OS.
     let hash = argon()
-        .hash_password(password.as_bytes(), &salt)
+        .hash_password(password.as_bytes())
         .map_err(|e| anyhow!("argon2 hash: {e}"))?;
     Ok(hash.to_string())
 }
@@ -52,7 +52,7 @@ fn verify_password(password: &str, phc: &str) -> bool {
 
 fn generate_token() -> String {
     let mut bytes = [0u8; 32];
-    OsRng.fill_bytes(&mut bytes);
+    getrandom::fill(&mut bytes).expect("OS random source is available");
     URL_SAFE_NO_PAD.encode(bytes)
 }
 
@@ -770,6 +770,14 @@ mod tests {
         let h = hash_password("correct horse battery staple").unwrap();
         assert!(verify_password("correct horse battery staple", &h));
         assert!(!verify_password("wrong", &h));
+    }
+
+    #[test]
+    fn verifies_hashes_from_argon2_0_5() {
+        // Made by argon2 0.5.3 with these params; stored user hashes must keep verifying.
+        let h = "$argon2id$v=19$m=19456,t=2,p=1$ya72Ggo2wOs/JMUZRW7HBg$DhOLSdmQr7B6O7GU9oc3LsiHM92fFI3iDQrTTeszsPM";
+        assert!(verify_password("correct horse battery staple", h));
+        assert!(!verify_password("wrong", h));
     }
 
     #[test]

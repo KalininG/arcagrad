@@ -3505,6 +3505,18 @@ async fn serves_a_page_and_404s_appropriately() {
     .await;
     assert_eq!(resp.status(), StatusCode::OK);
     assert_eq!(resp.headers().get("content-type").unwrap(), "image/jpeg");
+    let declared: usize = resp.headers()["content-length"]
+        .to_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    assert!(!body.is_empty());
+    assert_eq!(
+        body.len(),
+        declared,
+        "streamed body must match content-length"
+    );
 
     let resp = send(
         &app,

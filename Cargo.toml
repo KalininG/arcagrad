@@ -55,7 +55,7 @@ reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"
 extism = "1.30"
 tantivy = "0.26"
 utoipa = { version = "5", features = ["axum_extras"] }
-utoipa-axum = "0.2"
+utoipa-axum = "0.3"
 utoipa-swagger-ui = { version = "9", features = ["axum"] }
 
 [dev-dependencies]

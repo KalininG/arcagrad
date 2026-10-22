@@ -4,6 +4,15 @@ yanked = "deny"
 ignore = [
     # Unmaintained but not vulnerable; pulled in by utoipa-axum.
     "RUSTSEC-2024-0436",
+    # zip < 9: all three are in ZipArchive::extract() / ZipStreamReader::extract()
+    # (SUID bits kept, symlinks followed out of the target dir). Arcagrad never
+    # extracts archives to disk; it reads entries in memory. The other copy (zip 3)
+    # is a build-dependency of utoipa-swagger-ui unpacking its own pinned release.
+    # Remove once zip is >= 9 (entry names decode differently there, which changes
+    # zip deep hashes, so that upgrade needs its own migration).
+    { id = "RUSTSEC-2026-0367", reason = "extract() only; arcagrad never extracts archives" },
+    { id = "RUSTSEC-2026-0368", reason = "extract() only; arcagrad never extracts archives" },
+    { id = "RUSTSEC-2026-0369", reason = "extract() only; arcagrad never extracts archives" },
 ]
 
 [licenses]

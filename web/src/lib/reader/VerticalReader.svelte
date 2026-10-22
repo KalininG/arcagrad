@@ -230,7 +230,7 @@
 		downY = e.clientY;
 	}
 	function onPointerUp(e) {
-		if (e.target.closest('button, a')) return;
+		if (e.button !== 0 || e.target.closest('button, a')) return;
 		if (Math.abs(e.clientX - downX) < 10 && Math.abs(e.clientY - downY) < 10) {
 			immersive = !immersive;
 		}

@@ -29,7 +29,7 @@ zip = "2"
 # Used by positioned ZIP reads without reopening every entry through ZipArchive.
 flate2 = "1"
 crc32fast = "1"
-roxmltree = "0.20"
+roxmltree = "0.21"
 # Decode only. The bundled UnRAR source must not be used to build a compressor.
 unrar = "0.5"
 libvips = "2.3"

@@ -7,10 +7,10 @@
 		credentials as credsApi,
 		jobs as jobsApi,
 		ApiError,
-	} from '$lib/api.js';
-	import Dropdown from '$lib/components/ui/Dropdown.svelte';
-	import IdentifyModal from '$lib/components/IdentifyModal.svelte';
-	import Modal from '$lib/components/ui/Modal.svelte';
+	} from '#lib/api.js';
+	import Dropdown from '#lib/components/ui/Dropdown.svelte';
+	import IdentifyModal from '#lib/components/IdentifyModal.svelte';
+	import Modal from '#lib/components/ui/Modal.svelte';
 
 	let {
 		itemId,

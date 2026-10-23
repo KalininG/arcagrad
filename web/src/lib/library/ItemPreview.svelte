@@ -1,39 +1,39 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { items as itemsApi, media, ApiError } from '$lib/api.js';
-	import { refreshTagCounts } from '$lib/tagstats.js';
-	import { currentUser, resolveGuestSession } from '$lib/session.js';
-	import { kindHref, kindLabel, refreshKinds } from '$lib/kinds.js';
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import StarRating from '$lib/components/ui/StarRating.svelte';
-	import PreviewShell from '$lib/components/PreviewShell.svelte';
-	import ReadingModeToggle from '$lib/components/ReadingModeToggle.svelte';
-	import TagRows from '$lib/components/TagRows.svelte';
-	import Description from '$lib/components/Description.svelte';
-	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import MetadataModal from '$lib/components/MetadataModal.svelte';
-	import EditMetadataModal from '$lib/components/EditMetadataModal.svelte';
-	import ProgressMeter from '$lib/components/ui/ProgressMeter.svelte';
-	import DeleteConfirm from '$lib/components/ui/DeleteConfirm.svelte';
-	import IdentifyModal from '$lib/components/IdentifyModal.svelte';
-	import Comments from '$lib/components/Comments.svelte';
-	import PageThumbGrid from '$lib/components/PageThumbGrid.svelte';
-	import ChapterGrid from '$lib/components/ChapterGrid.svelte';
-	import ReflowableOverview from '$lib/components/ReflowableOverview.svelte';
-	import PreviewTitleMetadata from '$lib/components/PreviewTitleMetadata.svelte';
-	import CogMenu from '$lib/library/CogMenu.svelte';
-	import SimilarShelf from '$lib/library/SimilarShelf.svelte';
-	import { rowAlignedPageSize } from '$lib/grid.js';
-	import { beginDownload, finishDownload } from '$lib/downloads.js';
+	import { items as itemsApi, media, ApiError } from '#lib/api.js';
+	import { refreshTagCounts } from '#lib/tagstats.js';
+	import { currentUser, resolveGuestSession } from '#lib/session.js';
+	import { kindHref, kindLabel, refreshKinds } from '#lib/kinds.js';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import StarRating from '#lib/components/ui/StarRating.svelte';
+	import PreviewShell from '#lib/components/PreviewShell.svelte';
+	import ReadingModeToggle from '#lib/components/ReadingModeToggle.svelte';
+	import TagRows from '#lib/components/TagRows.svelte';
+	import Description from '#lib/components/Description.svelte';
+	import Pagination from '#lib/components/ui/Pagination.svelte';
+	import MetadataModal from '#lib/components/MetadataModal.svelte';
+	import EditMetadataModal from '#lib/components/EditMetadataModal.svelte';
+	import ProgressMeter from '#lib/components/ui/ProgressMeter.svelte';
+	import DeleteConfirm from '#lib/components/ui/DeleteConfirm.svelte';
+	import IdentifyModal from '#lib/components/IdentifyModal.svelte';
+	import Comments from '#lib/components/Comments.svelte';
+	import PageThumbGrid from '#lib/components/PageThumbGrid.svelte';
+	import ChapterGrid from '#lib/components/ChapterGrid.svelte';
+	import ReflowableOverview from '#lib/components/ReflowableOverview.svelte';
+	import PreviewTitleMetadata from '#lib/components/PreviewTitleMetadata.svelte';
+	import CogMenu from '#lib/library/CogMenu.svelte';
+	import SimilarShelf from '#lib/library/SimilarShelf.svelte';
+	import { rowAlignedPageSize } from '#lib/grid.js';
+	import { beginDownload, finishDownload } from '#lib/downloads.js';
 	import {
 		WORDS_PER_MINUTE,
 		readingTimeLabel as readingLabel,
 		compactWords as compactNum,
 		fileSizeLabel,
 		formatAdded,
-	} from '$lib/format.js';
-	import { loadSimilarCards } from '$lib/cards.js';
+	} from '#lib/format.js';
+	import { loadSimilarCards } from '#lib/cards.js';
 
 	let { id } = $props();
 

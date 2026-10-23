@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
-	import { users as usersApi, kinds as kindsApi } from '$lib/api.js';
-	import { kindLabel } from '$lib/kinds.js';
+	import { users as usersApi, kinds as kindsApi } from '#lib/api.js';
+	import { kindLabel } from '#lib/kinds.js';
 
 	let error = $state(null);
 

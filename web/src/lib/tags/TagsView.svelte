@@ -1,14 +1,14 @@
 <script>
 	import { get } from 'svelte/store';
-	import { tags as tagsApi } from '$lib/api.js';
-	import { isGuest } from '$lib/session.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import { tagHref } from '$lib/tags.js';
-	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import LibraryTabs from '$lib/library/LibraryTabs.svelte';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import { gridColumns, rowAlignedPageSize } from '$lib/grid.js';
+	import { tags as tagsApi } from '#lib/api.js';
+	import { isGuest } from '#lib/session.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import { tagHref } from '#lib/tags.js';
+	import Pagination from '#lib/components/ui/Pagination.svelte';
+	import Loading from '#lib/components/ui/Loading.svelte';
+	import LibraryTabs from '#lib/library/LibraryTabs.svelte';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import { gridColumns, rowAlignedPageSize } from '#lib/grid.js';
 
 	let { kind } = $props();
 

@@ -1,6 +1,6 @@
 <script>
-	import { page } from '$app/stores';
-	import SeriesPreview from '$lib/library/SeriesPreview.svelte';
+	import { page } from '$app/state';
+	import SeriesPreview from '#lib/library/SeriesPreview.svelte';
 </script>
 
-<SeriesPreview id={$page.params.id} />
+<SeriesPreview id={page.params.id} />

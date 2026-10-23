@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
-	import { series as seriesApi, kinds as kindsApi, media } from '$lib/api.js';
-	import Modal from '$lib/components/ui/Modal.svelte';
+	import { series as seriesApi, kinds as kindsApi, media } from '#lib/api.js';
+	import Modal from '#lib/components/ui/Modal.svelte';
 
 	let { seriesId, kind, onClose } = $props();
 	let providers = $state([]);

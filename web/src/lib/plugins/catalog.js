@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { plugins as pluginsApi } from '$lib/api.js';
+import { plugins as pluginsApi } from '#lib/api.js';
 
 let cached = null;
 export async function loadCatalog() {

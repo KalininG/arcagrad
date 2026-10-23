@@ -1,5 +1,5 @@
 <script>
-	import { kindHref } from '$lib/kinds.js';
+	import { kindHref } from '#lib/kinds.js';
 
 	let { kind = null, active } = $props();
 

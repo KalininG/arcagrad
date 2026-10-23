@@ -1,10 +1,10 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto, afterNavigate } from '$app/navigation';
-	import { auth } from '$lib/api.js';
-	import { setUser, GUEST } from '$lib/session.js';
-	import { refreshKindsSoon } from '$lib/kinds.js';
-	import Sidebar from '$lib/layout/Sidebar.svelte';
+	import { auth } from '#lib/api.js';
+	import { setUser, GUEST } from '#lib/session.js';
+	import { refreshKindsSoon } from '#lib/kinds.js';
+	import Sidebar from '#lib/layout/Sidebar.svelte';
 
 	let { children } = $props();
 	let me = $state(null);
@@ -39,7 +39,8 @@
 		};
 	});
 
-	afterNavigate(() => {
+	afterNavigate((nav) => {
+		if (nav.shallow) return;
 		navOpen = false;
 		refreshKindsSoon();
 	});

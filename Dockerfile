@@ -1,6 +1,6 @@
 # Keep every Rust stage on the same glibc base so cargo-chef artifacts remain compatible.
 
-FROM node:20-slim AS web
+FROM node:22-slim AS web
 WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci

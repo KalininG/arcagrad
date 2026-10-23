@@ -1,6 +1,6 @@
 <script>
-	import { theme, applyTheme } from '$lib/theme.js';
-	import { accent, applyAccent, resetAccent, ACCENTS, DEFAULT_ACCENT } from '$lib/accent.js';
+	import { theme, applyTheme } from '#lib/theme.js';
+	import { accent, applyAccent, resetAccent, ACCENTS, DEFAULT_ACCENT } from '#lib/accent.js';
 </script>
 
 <div class="display-grid">

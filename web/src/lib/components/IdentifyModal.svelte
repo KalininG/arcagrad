@@ -1,7 +1,7 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
-	import { items as itemsApi, kinds as kindsApi, media } from '$lib/api.js';
-	import Dropdown from '$lib/components/ui/Dropdown.svelte';
+	import { items as itemsApi, kinds as kindsApi, media } from '#lib/api.js';
+	import Dropdown from '#lib/components/ui/Dropdown.svelte';
 
 	let { itemId, kind, pageCount = null, pluginId = null, onClose, onScraped } = $props();
 

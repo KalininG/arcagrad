@@ -9,26 +9,26 @@
 		items as itemsApi,
 		media,
 		ApiError,
-	} from '$lib/api.js';
-	import { loadCover } from '$lib/browse/coverwarm.js';
-	import { refreshKinds, kindLabel, kindHref } from '$lib/kinds.js';
-	import { currentUser } from '$lib/session.js';
-	import { ensureTagCounts } from '$lib/tagstats.js';
-	import PreviewShell from '$lib/components/PreviewShell.svelte';
-	import ReadingModeToggle from '$lib/components/ReadingModeToggle.svelte';
-	import TagRows from '$lib/components/TagRows.svelte';
-	import PreviewTitleMetadata from '$lib/components/PreviewTitleMetadata.svelte';
-	import Description from '$lib/components/Description.svelte';
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import TypographicCover from '$lib/components/TypographicCover.svelte';
-	import FavCount from '$lib/components/FavCount.svelte';
-	import PageThumbGrid from '$lib/components/PageThumbGrid.svelte';
-	import ChapterGrid from '$lib/components/ChapterGrid.svelte';
-	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import Comments from '$lib/components/Comments.svelte';
-	import { rowAlignedPageSize } from '$lib/grid.js';
-	import { beginDownload, finishDownload } from '$lib/downloads.js';
-	import { readingTimeLabel } from '$lib/format.js';
+	} from '#lib/api.js';
+	import { loadCover } from '#lib/browse/coverwarm.js';
+	import { refreshKinds, kindLabel, kindHref } from '#lib/kinds.js';
+	import { currentUser } from '#lib/session.js';
+	import { ensureTagCounts } from '#lib/tagstats.js';
+	import PreviewShell from '#lib/components/PreviewShell.svelte';
+	import ReadingModeToggle from '#lib/components/ReadingModeToggle.svelte';
+	import TagRows from '#lib/components/TagRows.svelte';
+	import PreviewTitleMetadata from '#lib/components/PreviewTitleMetadata.svelte';
+	import Description from '#lib/components/Description.svelte';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import TypographicCover from '#lib/components/TypographicCover.svelte';
+	import FavCount from '#lib/components/FavCount.svelte';
+	import PageThumbGrid from '#lib/components/PageThumbGrid.svelte';
+	import ChapterGrid from '#lib/components/ChapterGrid.svelte';
+	import Pagination from '#lib/components/ui/Pagination.svelte';
+	import Comments from '#lib/components/Comments.svelte';
+	import { rowAlignedPageSize } from '#lib/grid.js';
+	import { beginDownload, finishDownload } from '#lib/downloads.js';
+	import { readingTimeLabel } from '#lib/format.js';
 
 	let { plugin, reference, kind, back = '' } = $props();
 

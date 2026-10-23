@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
-	import { metrics as metricsApi } from '$lib/api.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import Loading from '$lib/components/ui/Loading.svelte';
+	import { metrics as metricsApi } from '#lib/api.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import Loading from '#lib/components/ui/Loading.svelte';
 
 	const KIND_COLORS = [
 		'#4a9eff',

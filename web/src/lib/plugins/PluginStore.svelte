@@ -1,9 +1,9 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { credentials as credsApi, kinds as kindsApi } from '$lib/api.js';
-	import { currentUser } from '$lib/session.js';
-	import { CAP_LABEL, monogram, tintOf } from '$lib/plugins/common.js';
+	import { credentials as credsApi, kinds as kindsApi } from '#lib/api.js';
+	import { currentUser } from '#lib/session.js';
+	import { CAP_LABEL, monogram, tintOf } from '#lib/plugins/common.js';
 	import {
 		loadCatalog,
 		reloadCatalog,
@@ -12,12 +12,12 @@
 		installs,
 		realVersion,
 		realAuthor,
-	} from '$lib/plugins/catalog.js';
-	import { plugins as pluginsApi, media } from '$lib/api.js';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import DeleteConfirm from '$lib/components/ui/DeleteConfirm.svelte';
-	import InstallSheet from '$lib/plugins/InstallSheet.svelte';
+	} from '#lib/plugins/catalog.js';
+	import { plugins as pluginsApi, media } from '#lib/api.js';
+	import Loading from '#lib/components/ui/Loading.svelte';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import DeleteConfirm from '#lib/components/ui/DeleteConfirm.svelte';
+	import InstallSheet from '#lib/plugins/InstallSheet.svelte';
 
 	const isAdmin = $derived($currentUser?.role === 'admin');
 
@@ -66,7 +66,7 @@
 		tab = id;
 		const url = new URL(location.href);
 		url.searchParams.set('tab', id);
-		goto(url, { replaceState: true, keepFocus: true, noScroll: true });
+		goto(url, { replace: true, reset: false });
 	}
 	let showNsfw = $state(false);
 	$effect(() => {

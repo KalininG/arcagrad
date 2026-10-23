@@ -1,6 +1,6 @@
 <script>
-	import { items as itemsApi } from '$lib/api.js';
-	import { WORDS_PER_MINUTE, compactWords, readingTimeLabel, relativeTime } from '$lib/format.js';
+	import { items as itemsApi } from '#lib/api.js';
+	import { WORDS_PER_MINUTE, compactWords, readingTimeLabel, relativeTime } from '#lib/format.js';
 
 	let {
 		itemId,

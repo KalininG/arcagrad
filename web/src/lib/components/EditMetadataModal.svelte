@@ -1,6 +1,6 @@
 <script>
-	import { items as itemsApi, series as seriesApi } from '$lib/api.js';
-	import Modal from '$lib/components/ui/Modal.svelte';
+	import { items as itemsApi, series as seriesApi } from '#lib/api.js';
+	import Modal from '#lib/components/ui/Modal.svelte';
 
 	let { meta, mode = 'item', onClose, onUpdated } = $props();
 	const isSeries = mode === 'series';

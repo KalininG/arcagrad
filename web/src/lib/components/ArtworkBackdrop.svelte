@@ -4,7 +4,7 @@
 </script>
 
 <script>
-	import { paletteFromImage } from '$lib/artworkPalette.js';
+	import { paletteFromImage } from '#lib/artworkPalette.js';
 
 	let { src = '' } = $props();
 	let colors = $state([]);

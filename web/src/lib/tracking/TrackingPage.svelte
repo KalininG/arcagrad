@@ -1,15 +1,15 @@
 <script>
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
-	import { currentUser } from '$lib/session.js';
-	import { loadFollows, followNewCount } from '$lib/follows/store.js';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import UpcomingPage from '$lib/upcoming/UpcomingPage.svelte';
-	import FollowingPage from '$lib/follows/FollowingPage.svelte';
-	import TrackedSeriesPage from '$lib/tracking/TrackedSeriesPage.svelte';
+	import { page } from '$app/state';
+	import { currentUser } from '#lib/session.js';
+	import { loadFollows, followNewCount } from '#lib/follows/store.js';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import UpcomingPage from '#lib/upcoming/UpcomingPage.svelte';
+	import FollowingPage from '#lib/follows/FollowingPage.svelte';
+	import TrackedSeriesPage from '#lib/tracking/TrackedSeriesPage.svelte';
 
 	const isAdmin = $derived($currentUser?.role === 'admin');
-	const requestedTab = $derived($page.url.searchParams.get('tab') ?? 'upcoming');
+	const requestedTab = $derived(page.url.searchParams.get('tab') ?? 'upcoming');
 	const activeTab = $derived(
 		isAdmin && (requestedTab === 'uploads' || requestedTab === 'series')
 			? requestedTab

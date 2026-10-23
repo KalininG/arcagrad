@@ -1,11 +1,11 @@
 <script>
 	import { get } from 'svelte/store';
 	import { goto, afterNavigate } from '$app/navigation';
-	import { kindLabel } from '$lib/kinds.js';
-	import { seriesHint } from '$lib/seriesHint.js';
-	import { navStack, pushNav, popNav, setNav, markPop, consumePop } from '$lib/navStack.js';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import ArtworkBackdrop from '$lib/components/ArtworkBackdrop.svelte';
+	import { kindLabel } from '#lib/kinds.js';
+	import { seriesHint } from '#lib/seriesHint.js';
+	import { navStack, pushNav, popNav, setNav, markPop, consumePop } from '#lib/navStack.js';
+	import Loading from '#lib/components/ui/Loading.svelte';
+	import ArtworkBackdrop from '#lib/components/ArtworkBackdrop.svelte';
 
 	let {
 		title = '',
@@ -28,6 +28,7 @@
 		p.startsWith('/reader/') || (p.startsWith('/source/') && p.endsWith('/read'));
 
 	afterNavigate((nav) => {
+		if (nav.shallow) return;
 		if (nav.type === 'popstate') return;
 		if (consumePop()) return;
 		const from = nav.from?.url;

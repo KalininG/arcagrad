@@ -2,9 +2,9 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
-	import { items as itemsApi, media, ApiError } from '$lib/api.js';
-	import { isGuest } from '$lib/session.js';
-	import Loading from '$lib/components/ui/Loading.svelte';
+	import { items as itemsApi, media, ApiError } from '#lib/api.js';
+	import { isGuest } from '#lib/session.js';
+	import Loading from '#lib/components/ui/Loading.svelte';
 	import ReaderChrome from './ReaderChrome.svelte';
 
 	let { id, detail, openContents = false } = $props();

@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { downloads, setDownloadProgress, dismissDownload } from '$lib/downloads.js';
+	import { downloads, setDownloadProgress, dismissDownload } from '#lib/downloads.js';
 
 	function onBubbleClick(d) {
 		if (d.state === 'done' && d.href) {

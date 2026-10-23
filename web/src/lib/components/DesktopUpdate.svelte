@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { checkForUpdate, installUpdate, isDesktop } from '$lib/updates.js';
+	import { checkForUpdate, installUpdate, isDesktop } from '#lib/updates.js';
 
 	let update = $state(null);
 	let installing = $state(false);

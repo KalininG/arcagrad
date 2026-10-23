@@ -1,5 +1,5 @@
 <script>
-	import { relativeTime } from '$lib/format.js';
+	import { relativeTime } from '#lib/format.js';
 
 	let {
 		updatedLabel = 'Updated',

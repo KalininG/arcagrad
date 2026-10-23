@@ -1,5 +1,5 @@
 <script>
-	import { tagHref } from '$lib/tags.js';
+	import { tagHref } from '#lib/tags.js';
 
 	let {
 		tags = [],

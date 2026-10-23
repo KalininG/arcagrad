@@ -1,24 +1,24 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { series as seriesApi, media, ApiError } from '$lib/api.js';
-	import { currentUser, resolveGuestSession } from '$lib/session.js';
-	import { kindHref, kindLabel } from '$lib/kinds.js';
-	import { setSeriesHint } from '$lib/seriesHint.js';
-	import PreviewShell from '$lib/components/PreviewShell.svelte';
-	import ProgressMeter from '$lib/components/ui/ProgressMeter.svelte';
-	import StarRating from '$lib/components/ui/StarRating.svelte';
-	import TagRows from '$lib/components/TagRows.svelte';
-	import PreviewTitleMetadata from '$lib/components/PreviewTitleMetadata.svelte';
-	import Description from '$lib/components/Description.svelte';
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import MetadataModal from '$lib/components/MetadataModal.svelte';
-	import EditMetadataModal from '$lib/components/EditMetadataModal.svelte';
-	import TrackerModal from '$lib/components/TrackerModal.svelte';
-	import CogMenu from '$lib/library/CogMenu.svelte';
-	import SimilarShelf from '$lib/library/SimilarShelf.svelte';
-	import { WORDS_PER_MINUTE, readingTimeLabel, compactWords, formatAdded } from '$lib/format.js';
-	import { loadSimilarCards } from '$lib/cards.js';
+	import { series as seriesApi, media, ApiError } from '#lib/api.js';
+	import { currentUser, resolveGuestSession } from '#lib/session.js';
+	import { kindHref, kindLabel } from '#lib/kinds.js';
+	import { setSeriesHint } from '#lib/seriesHint.js';
+	import PreviewShell from '#lib/components/PreviewShell.svelte';
+	import ProgressMeter from '#lib/components/ui/ProgressMeter.svelte';
+	import StarRating from '#lib/components/ui/StarRating.svelte';
+	import TagRows from '#lib/components/TagRows.svelte';
+	import PreviewTitleMetadata from '#lib/components/PreviewTitleMetadata.svelte';
+	import Description from '#lib/components/Description.svelte';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import MetadataModal from '#lib/components/MetadataModal.svelte';
+	import EditMetadataModal from '#lib/components/EditMetadataModal.svelte';
+	import TrackerModal from '#lib/components/TrackerModal.svelte';
+	import CogMenu from '#lib/library/CogMenu.svelte';
+	import SimilarShelf from '#lib/library/SimilarShelf.svelte';
+	import { WORDS_PER_MINUTE, readingTimeLabel, compactWords, formatAdded } from '#lib/format.js';
+	import { loadSimilarCards } from '#lib/cards.js';
 
 	let { id } = $props();
 

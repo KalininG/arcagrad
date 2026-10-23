@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import { tags as tagsApi } from '$lib/api.js';
+import { tags as tagsApi } from '#lib/api.js';
 
 export const tagCounts = writable(null);
 

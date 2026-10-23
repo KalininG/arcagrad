@@ -1,8 +1,8 @@
 <script>
-	import { page } from '$app/stores';
-	import Library from '$lib/library/Library.svelte';
+	import { page } from '$app/state';
+	import Library from '#lib/library/Library.svelte';
 
-	const kind = $derived(decodeURIComponent($page.params.kind));
+	const kind = $derived(decodeURIComponent(page.params.kind));
 </script>
 
 {#key kind}

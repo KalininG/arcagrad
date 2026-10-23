@@ -1,6 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { auth } from '$lib/api.js';
+import { auth } from '#lib/api.js';
 
 export const GUEST = { id: 0, username: 'Guest', role: 'guest' };
 

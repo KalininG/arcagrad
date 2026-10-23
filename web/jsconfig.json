@@ -1,3 +1,8 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json"
+	"extends": "$app/tsconfig",
+	"compilerOptions": {
+		// $app/tsconfig turns on checkJs; keep JS unchecked as it was on SvelteKit 2.
+		"checkJs": false
+	},
+	"include": ["src", "vite.config.js"]
 }

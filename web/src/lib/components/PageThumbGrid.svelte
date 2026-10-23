@@ -1,5 +1,5 @@
 <script>
-	import { gridColumns } from '$lib/grid.js';
+	import { gridColumns } from '#lib/grid.js';
 	import CoverThumbnail from './CoverThumbnail.svelte';
 
 	let { pages = [], onopen, oncols } = $props();

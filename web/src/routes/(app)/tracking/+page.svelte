@@ -1,5 +1,5 @@
 <script>
-	import TrackingPage from '$lib/tracking/TrackingPage.svelte';
+	import TrackingPage from '#lib/tracking/TrackingPage.svelte';
 </script>
 
 <TrackingPage />

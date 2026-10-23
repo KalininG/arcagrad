@@ -1,13 +1,13 @@
 <script>
-	import { items as itemsApi, media, series as seriesApi } from '$lib/api.js';
-	import { cardHref, coverId, loadSimilarCards } from '$lib/cards.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import ScoreBadge from '$lib/components/ScoreBadge.svelte';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import Shelf from '$lib/components/ui/Shelf.svelte';
-	import LibraryTabs from '$lib/library/LibraryTabs.svelte';
+	import { items as itemsApi, media, series as seriesApi } from '#lib/api.js';
+	import { cardHref, coverId, loadSimilarCards } from '#lib/cards.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import ScoreBadge from '#lib/components/ScoreBadge.svelte';
+	import Loading from '#lib/components/ui/Loading.svelte';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import Shelf from '#lib/components/ui/Shelf.svelte';
+	import LibraryTabs from '#lib/library/LibraryTabs.svelte';
 
 	let { kind = null } = $props();
 

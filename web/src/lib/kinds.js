@@ -1,6 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
-import { kinds as kindsApi } from '$lib/api.js';
-import { currentUser } from '$lib/session.js';
+import { kinds as kindsApi } from '#lib/api.js';
+import { currentUser } from '#lib/session.js';
 
 export const kinds = writable([]);
 

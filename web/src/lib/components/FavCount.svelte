@@ -1,5 +1,5 @@
 <script>
-	import { compactNumber } from '$lib/format.js';
+	import { compactNumber } from '#lib/format.js';
 	let { count = null } = $props();
 </script>
 

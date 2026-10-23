@@ -1,7 +1,7 @@
 <script>
 	import { goto, replaceState } from '$app/navigation';
-	import { page as pageStore } from '$app/stores';
-	import { get } from 'svelte/store';
+	import { untrack } from 'svelte';
+	import { page as pageState } from '$app/state';
 	import {
 		plugins as pluginsApi,
 		kinds as kindsApi,
@@ -9,15 +9,15 @@
 		follows as followsApi,
 		media,
 		ApiError,
-	} from '$lib/api.js';
-	import { currentUser } from '$lib/session.js';
-	import { loadCover } from '$lib/browse/coverwarm.js';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import BrowseCard from '$lib/browse/BrowseCard.svelte';
-	import Dropdown from '$lib/components/ui/Dropdown.svelte';
-	import Loading from '$lib/components/ui/Loading.svelte';
+	} from '#lib/api.js';
+	import { currentUser } from '#lib/session.js';
+	import { loadCover } from '#lib/browse/coverwarm.js';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Pagination from '#lib/components/ui/Pagination.svelte';
+	import BrowseCard from '#lib/browse/BrowseCard.svelte';
+	import Dropdown from '#lib/components/ui/Dropdown.svelte';
+	import Loading from '#lib/components/ui/Loading.svelte';
 
 	let { kind } = $props();
 
@@ -166,7 +166,7 @@
 	}
 
 	function readUrlState() {
-		const sp = get(pageStore).url.searchParams;
+		const sp = untrack(() => pageState.url.searchParams);
 		return {
 			src: sp.get('src') ?? '',
 			feed: sp.get('feed') ?? '',
@@ -185,7 +185,7 @@
 		page = want.page;
 	}
 	function syncUrl() {
-		const url = new URL(get(pageStore).url);
+		const url = new URL(untrack(() => pageState.url));
 		const sp = url.searchParams;
 		const put = (k, v) => (v ? sp.set(k, v) : sp.delete(k));
 		put('src', plugins.length > 1 ? pluginId : '');

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { follows as followsApi } from '$lib/api.js';
+import { follows as followsApi } from '#lib/api.js';
 
 export const followNewCount = writable(0);
 

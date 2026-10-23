@@ -28,7 +28,7 @@ jobs:
           components: rustfmt
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
       - name: Install web deps
@@ -81,7 +81,7 @@ jobs:
           tool: nextest
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
 

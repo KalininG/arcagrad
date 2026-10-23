@@ -8,20 +8,20 @@
 		library as libraryApi,
 		jobs as jobsApi,
 		media,
-	} from '$lib/api.js';
-	import { loadFollows } from '$lib/follows/store.js';
-	import { loadCover } from '$lib/browse/coverwarm.js';
-	import { beginDownload, finishDownload } from '$lib/downloads.js';
-	import { refreshKinds } from '$lib/kinds.js';
-	import { monogram, tintOf } from '$lib/plugins/common.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import BrowseCard from '$lib/browse/BrowseCard.svelte';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import DeleteConfirm from '$lib/components/ui/DeleteConfirm.svelte';
-	import Loading from '$lib/components/ui/Loading.svelte';
-	import ScheduleFooter from '$lib/components/ScheduleFooter.svelte';
-	import { relativeTime } from '$lib/format.js';
+	} from '#lib/api.js';
+	import { loadFollows } from '#lib/follows/store.js';
+	import { loadCover } from '#lib/browse/coverwarm.js';
+	import { beginDownload, finishDownload } from '#lib/downloads.js';
+	import { refreshKinds } from '#lib/kinds.js';
+	import { monogram, tintOf } from '#lib/plugins/common.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import BrowseCard from '#lib/browse/BrowseCard.svelte';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import DeleteConfirm from '#lib/components/ui/DeleteConfirm.svelte';
+	import Loading from '#lib/components/ui/Loading.svelte';
+	import ScheduleFooter from '#lib/components/ScheduleFooter.svelte';
+	import { relativeTime } from '#lib/format.js';
 
 	let { embedded = false } = $props();
 

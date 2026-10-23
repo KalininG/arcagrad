@@ -1,10 +1,10 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { credentials as credsApi, kinds as kindsApi, media } from '$lib/api.js';
-	import { currentUser } from '$lib/session.js';
-	import { kindLabel } from '$lib/kinds.js';
-	import { CAP_LABEL, monogram, tintOf } from '$lib/plugins/common.js';
+	import { credentials as credsApi, kinds as kindsApi, media } from '#lib/api.js';
+	import { currentUser } from '#lib/session.js';
+	import { kindLabel } from '#lib/kinds.js';
+	import { CAP_LABEL, monogram, tintOf } from '#lib/plugins/common.js';
 	import {
 		loadCatalog,
 		catalogById,
@@ -14,8 +14,8 @@
 		authorProfile,
 		update as updatePlugin,
 		uninstall as uninstallPlugin,
-	} from '$lib/plugins/catalog.js';
-	import InstallSheet from '$lib/plugins/InstallSheet.svelte';
+	} from '#lib/plugins/catalog.js';
+	import InstallSheet from '#lib/plugins/InstallSheet.svelte';
 
 	let { id, setup = false } = $props();
 	const repoHost = (url) => {

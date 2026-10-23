@@ -1,9 +1,9 @@
 <script>
-	import CoverThumbnail from '$lib/components/CoverThumbnail.svelte';
-	import Shelf from '$lib/components/ui/Shelf.svelte';
-	import ScoreBadge from '$lib/components/ScoreBadge.svelte';
-	import { media } from '$lib/api.js';
-	import { cardHref, coverId } from '$lib/cards.js';
+	import CoverThumbnail from '#lib/components/CoverThumbnail.svelte';
+	import Shelf from '#lib/components/ui/Shelf.svelte';
+	import ScoreBadge from '#lib/components/ScoreBadge.svelte';
+	import { media } from '#lib/api.js';
+	import { cardHref, coverId } from '#lib/cards.js';
 
 	let { items } = $props();
 </script>

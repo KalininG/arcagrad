@@ -1,5 +1,5 @@
 <script>
-	import Library from '$lib/library/Library.svelte';
+	import Library from '#lib/library/Library.svelte';
 </script>
 
 <Library kind={null} />

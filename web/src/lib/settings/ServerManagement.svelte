@@ -1,10 +1,10 @@
 <script>
 	import { goto } from '$app/navigation';
-	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import ServerHealth from '$lib/settings/ServerHealth.svelte';
-	import AccountsTable from '$lib/settings/AccountsTable.svelte';
-	import Users from '$lib/settings/Users.svelte';
-	import { currentUser } from '$lib/session.js';
+	import PageHeader from '#lib/components/ui/PageHeader.svelte';
+	import ServerHealth from '#lib/settings/ServerHealth.svelte';
+	import AccountsTable from '#lib/settings/AccountsTable.svelte';
+	import Users from '#lib/settings/Users.svelte';
+	import { currentUser } from '#lib/session.js';
 
 	const isAdmin = $derived($currentUser?.role === 'admin');
 
@@ -26,7 +26,7 @@
 		active = id;
 		const url = new URL(location.href);
 		url.searchParams.set('tab', id);
-		goto(url, { replaceState: true, keepFocus: true, noScroll: true });
+		goto(url, { replace: true, reset: false });
 	}
 </script>
 

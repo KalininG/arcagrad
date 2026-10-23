@@ -25,7 +25,7 @@ arcagrad-plugin-sdk = { path = "plugin-sdk", features = ["validation", "schema"]
 url = "2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 anyhow = "1"
-zip = "2"
+zip = "3"
 # Used by positioned ZIP reads without reopening every entry through ZipArchive.
 flate2 = "1"
 crc32fast = "1"

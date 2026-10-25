@@ -152,7 +152,7 @@ jobs:
           [System.IO.File]::WriteAllText("$PWD/release-body.md", $body)
 
       - name: Publish to draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           name: Arcagrad ${{ github.event.inputs.tag || github.ref_name }}
@@ -235,7 +235,7 @@ jobs:
           "$BT/apksigner" verify --print-certs dist/Arcagrad-Android.apk
 
       - name: Publish APK to draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           draft: true
@@ -289,7 +289,7 @@ jobs:
           cp client/src-tauri/gen/apple/build/arm64/*.ipa dist/Arcagrad-iOS.ipa
 
       - name: Publish IPA to draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           draft: true
@@ -330,7 +330,7 @@ jobs:
           cat latest.json
       - name: Publish latest.json to the release
         if: env.SIGN_UPDATER == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           draft: true

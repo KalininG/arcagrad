@@ -91,7 +91,7 @@ jobs:
         run: npm ci
 
       - name: Build client (unsigned)
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           # Hosted Linux runners cannot mount linuxdeploy's AppImage.
           APPIMAGE_EXTRACT_AND_RUN: 1
